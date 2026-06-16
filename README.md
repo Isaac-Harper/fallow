@@ -1,5 +1,9 @@
 # Fallow
 
+[![Modrinth](https://img.shields.io/modrinth/v/fallow?logo=modrinth&color=00AF5C&label=Modrinth)](https://modrinth.com/mod/fallow)
+[![Downloads](https://img.shields.io/modrinth/dt/fallow?logo=modrinth&color=00AF5C&label=downloads)](https://modrinth.com/mod/fallow)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 Seasons with a living ecology, for Fabric on Minecraft 26.1.x.
 
 The world slowly fills in while you play: grass sprouts on bare ground and grows tall,

@@ -3,6 +3,7 @@
 # (same path Shulker Pocket took). See https://stonecutter.kikugie.dev/wiki/config/properties
 mod.id = "fallow"
 mod.version = "0.2.0"
+mod.modrinth_id = "fallow"
 
 deps.fabric_loader = "0.19.3"
 loomx.loom_version = "1.16-SNAPSHOT"

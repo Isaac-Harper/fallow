@@ -7,8 +7,13 @@
   "authors": [
     "Isaac Harper"
   ],
-  "contact": {},
+  "contact": {
+    "homepage": "https://modrinth.com/mod/fallow",
+    "sources": "https://github.com/Isaac-Harper/fallow",
+    "issues": "https://github.com/Isaac-Harper/fallow/issues"
+  },
   "license": "MIT",
+  "icon": "assets/fallow/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [

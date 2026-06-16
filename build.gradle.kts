@@ -2,6 +2,7 @@ plugins {
     // Picks the remapping loom for obfuscated MC (<26.1) and the no-remap loom for 26.1+,
     // and exposes a uniform modImplementation / applyMojangMappings / modJar API for both.
     id("dev.kikugie.loom-back-compat")
+    id("me.modmuss50.mod-publish-plugin") version "1.1.0"
 }
 
 // Per Stonecutter: do NOT set group here.
@@ -13,6 +14,10 @@ val requiredJava: JavaVersion = when {
     sc.current.parsed >= "1.20.5" -> JavaVersion.VERSION_21
     else                          -> JavaVersion.VERSION_17
 }
+
+// Modrinth game versions this jar covers (used for publishing).
+val compatibleVersions: List<String> = sc.properties.rawOrNull("mod", "mc_releases")
+    ?.asList().orEmpty().map { it.toString() }
 
 repositories {
     maven("https://maven.fabricmc.net/")
@@ -91,5 +96,28 @@ java {
     targetCompatibility = requiredJava
     toolchain {
         languageVersion = JavaLanguageVersion.of(requiredJava.majorVersion)
+    }
+}
+
+// Modrinth publishing via the Mod Publish Plugin. Each node uploads one version with its own
+// gameVersions; fan out across nodes with chiseledPublishMods (see stonecutter.gradle.kts).
+// Without MODRINTH_TOKEN (local runs) it dry-runs: the config is validated and the jar built, but
+// nothing uploads. The token comes from .env locally or the CI secret. See docs/promotion.md.
+publishMods {
+    file = loomx.modJar.flatMap { it.archiveFile }
+    version = project.version.toString()
+    type = me.modmuss50.mpp.ReleaseType.STABLE
+    displayName = "Fallow ${project.version}"
+    modLoaders.add("fabric")
+    changelog = "Fallow ${property("mod.version")} for Minecraft $mcCompat. " +
+        "See the project page for the full feature list."
+    dryRun = !providers.environmentVariable("MODRINTH_TOKEN").isPresent
+
+    modrinth {
+        projectId = property("mod.modrinth_id") as String
+        accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+        minecraftVersions.addAll(compatibleVersions)
+        requires("fabric-api")
+        optional("modmenu")
     }
 }
