@@ -91,21 +91,28 @@ public final class ConfigScreen extends Screen {
         int cx = this.width / 2;
         int leftX = cx - WIDGET_WIDTH - COLUMN_GAP / 2;
         int rightX = cx + COLUMN_GAP / 2;
-        // +1 row of headroom for the full-width master switch that sits above both columns.
-        int top = this.height / 2 - ((ROWS + 1) * ROW_SPACING) / 2;
+        int fullWidth = WIDGET_WIDTH * 2 + COLUMN_GAP;
 
+        // Top-anchored so the title stays visible: title, then the full-width master switch, then
+        // the two columns, with a single row of action buttons pinned to the bottom.
         StringWidget titleWidget = new StringWidget(this.title, this.font);
         titleWidget.setX(cx - titleWidget.getWidth() / 2);
-        titleWidget.setY(top - 28);
+        titleWidget.setY(8);
         addRenderableWidget(titleWidget);
 
-        // Master switch, full width above both columns: the whole mod is off until this is on.
+        int masterY = 22;
         addRenderableWidget(CycleButton.onOffBuilder(this.masterEnabled)
             .withTooltip(v -> tip("fallow.config.enabled.tooltip"))
-            .create(leftX, top, WIDGET_WIDTH * 2 + COLUMN_GAP, WIDGET_HEIGHT,
+            .create(leftX, masterY, fullWidth, WIDGET_HEIGHT,
                 Component.translatable("fallow.config.enabled"),
                 (button, value) -> this.masterEnabled = value));
-        int columnsTop = top + ROW_SPACING + 4;
+
+        // The columns fill the gap between the master switch and the bottom button row; row spacing
+        // shrinks on short windows (down to flush) so the lowest rows never overlap the buttons.
+        int by = this.height - 28;
+        int columnsTop = masterY + WIDGET_HEIGHT + 8;
+        int rowSpacing = Math.max(WIDGET_HEIGHT,
+            Math.min(ROW_SPACING, ((by - 6 - columnsTop) - WIDGET_HEIGHT) / (ROWS - 1)));
 
         // --- Left column: ecology ---
         int y = columnsTop;
@@ -114,38 +121,38 @@ public final class ConfigScreen extends Screen {
             .create(leftX, y, WIDGET_WIDTH, WIDGET_HEIGHT,
                 Component.translatable("fallow.config.vegetation"),
                 (button, value) -> this.vegetationEnabled = value));
-        y += ROW_SPACING;
+        y += rowSpacing;
 
         addRenderableWidget(new PercentSlider(leftX, y, "fallow.config.short_grass", 0.10,
             () -> shortGrassChance, v -> shortGrassChance = v));
-        y += ROW_SPACING;
+        y += rowSpacing;
         addRenderableWidget(new PercentSlider(leftX, y, "fallow.config.tall_grass", 0.10,
             () -> tallGrassChance, v -> tallGrassChance = v));
-        y += ROW_SPACING;
+        y += rowSpacing;
         addRenderableWidget(new PercentSlider(leftX, y, "fallow.config.flower", 0.05,
             () -> flowerChance, v -> flowerChance = v));
-        y += ROW_SPACING;
+        y += rowSpacing;
         addRenderableWidget(new PercentSlider(leftX, y, "fallow.config.bush", 0.05,
             () -> bushChance, v -> bushChance = v));
-        y += ROW_SPACING;
+        y += rowSpacing;
         addRenderableWidget(CycleButton.onOffBuilder(this.diebackEnabled)
             .withTooltip(v -> tip("fallow.config.dieback.tooltip"))
             .create(leftX, y, WIDGET_WIDTH, WIDGET_HEIGHT,
                 Component.translatable("fallow.config.dieback"),
                 (button, value) -> this.diebackEnabled = value));
-        y += ROW_SPACING;
+        y += rowSpacing;
         addRenderableWidget(CycleButton.onOffBuilder(this.trailsEnabled)
             .withTooltip(v -> tip("fallow.config.trails.tooltip"))
             .create(leftX, y, WIDGET_WIDTH, WIDGET_HEIGHT,
                 Component.translatable("fallow.config.trails"),
                 (button, value) -> this.trailsEnabled = value));
-        y += ROW_SPACING;
+        y += rowSpacing;
         addRenderableWidget(CycleButton.onOffBuilder(this.leafLitterEnabled)
             .withTooltip(v -> tip("fallow.config.leaf_litter.tooltip"))
             .create(leftX, y, WIDGET_WIDTH, WIDGET_HEIGHT,
                 Component.translatable("fallow.config.leaf_litter"),
                 (button, value) -> this.leafLitterEnabled = value));
-        y += ROW_SPACING;
+        y += rowSpacing;
         addRenderableWidget(CycleButton.onOffBuilder(this.overcrowdingEnabled)
             .withTooltip(v -> tip("fallow.config.overcrowding.tooltip"))
             .create(leftX, y, WIDGET_WIDTH, WIDGET_HEIGHT,
@@ -159,58 +166,57 @@ public final class ConfigScreen extends Screen {
             .create(rightX, y, WIDGET_WIDTH, WIDGET_HEIGHT,
                 Component.translatable("fallow.config.seasons"),
                 (button, value) -> this.seasonsEnabled = value));
-        y += ROW_SPACING;
+        y += rowSpacing;
 
         addRenderableWidget(new IntSlider(rightX, y, "fallow.config.season_length", 1, 30,
             () -> daysPerSeason, v -> daysPerSeason = v));
-        y += ROW_SPACING;
+        y += rowSpacing;
 
         addRenderableWidget(CycleButton.onOffBuilder(this.visualsEnabled)
             .withTooltip(v -> tip("fallow.config.visuals.tooltip"))
             .create(rightX, y, WIDGET_WIDTH, WIDGET_HEIGHT,
                 Component.translatable("fallow.config.visuals"),
                 (button, value) -> this.visualsEnabled = value));
-        y += ROW_SPACING;
+        y += rowSpacing;
 
         addRenderableWidget(CycleButton.onOffBuilder(this.dayNightEnabled)
             .withTooltip(v -> tip("fallow.config.day_night.tooltip"))
             .create(rightX, y, WIDGET_WIDTH, WIDGET_HEIGHT,
                 Component.translatable("fallow.config.day_night"),
                 (button, value) -> this.dayNightEnabled = value));
-        y += ROW_SPACING;
+        y += rowSpacing;
 
         addRenderableWidget(new PortionSlider(rightX, y, "fallow.config.summer_day", 0.50, 0.75,
             () -> summerDayPortion, v -> summerDayPortion = v));
-        y += ROW_SPACING;
+        y += rowSpacing;
         addRenderableWidget(new PortionSlider(rightX, y, "fallow.config.winter_day", 0.25, 0.50,
             () -> winterDayPortion, v -> winterDayPortion = v));
-        y += ROW_SPACING;
+        y += rowSpacing;
         addRenderableWidget(CycleButton.onOffBuilder(this.saplingsEnabled)
             .withTooltip(v -> tip("fallow.config.saplings.tooltip"))
             .create(rightX, y, WIDGET_WIDTH, WIDGET_HEIGHT,
                 Component.translatable("fallow.config.saplings"),
                 (button, value) -> this.saplingsEnabled = value));
-        y += ROW_SPACING;
+        y += rowSpacing;
         addRenderableWidget(CycleButton.onOffBuilder(this.shorelineEnabled)
             .withTooltip(v -> tip("fallow.config.shoreline.tooltip"))
             .create(rightX, y, WIDGET_WIDTH, WIDGET_HEIGHT,
                 Component.translatable("fallow.config.shoreline"),
                 (button, value) -> this.shorelineEnabled = value));
-        y += ROW_SPACING;
+        y += rowSpacing;
         addRenderableWidget(CycleButton.onOffBuilder(this.flowerWiltEnabled)
             .withTooltip(v -> tip("fallow.config.flower_wilt.tooltip"))
             .create(rightX, y, WIDGET_WIDTH, WIDGET_HEIGHT,
                 Component.translatable("fallow.config.flower_wilt"),
                 (button, value) -> this.flowerWiltEnabled = value));
 
-        int by = this.height - 28;
-        addRenderableWidget(Button.builder(Component.translatable("fallow.config.reset"),
-                b -> resetDefaults())
-            .bounds(cx - 102, by - 24, 204, WIDGET_HEIGHT).build());
+        // Reset | Cancel | Done on one bottom row (frees a row of vertical space for the columns).
+        addRenderableWidget(Button.builder(Component.translatable("fallow.config.reset"), b -> resetDefaults())
+            .bounds(leftX, by, 160, WIDGET_HEIGHT).build());
         addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, b -> onClose())
-            .bounds(cx - 104, by, 100, WIDGET_HEIGHT).build());
+            .bounds(leftX + 165, by, 120, WIDGET_HEIGHT).build());
         addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, b -> { commit(); onClose(); })
-            .bounds(cx + 4, by, 100, WIDGET_HEIGHT).build());
+            .bounds(leftX + 290, by, fullWidth - 290, WIDGET_HEIGHT).build());
     }
 
     private void resetDefaults() {

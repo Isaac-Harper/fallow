@@ -100,17 +100,28 @@ public final class SaplingSpreadTask implements EcologyTask {
             return 0;
         }
         FallowConfig.Saplings.TreeType type = typeFor(sapling, cfg);
+        // Mega-only species (dark/pale oak) never grow as a lone sapling: four must share a flat 2x2,
+        // which vanilla then grows on random tick. Nudge this seed up to clusterRadius blocks onto
+        // the cell that best advances a nearby partial 2x2 (a lone founder otherwise). Everything
+        // below runs against the chosen cell so the per-species gates apply where it actually lands.
+        BlockPos target = pos;
+        if (type != null && type.twoByTwo && cfg.clusterRadius > 0) {
+            target = clusterTarget(level, pos, sapling, cfg);
+            if (target == null) {
+                return 0;
+            }
+        }
         int baseDensity = type != null ? type.density : cfg.maxSaplingsNearby;
         // Per-species cap, scaled per biome (lush x1.5, arid x0.2). Same value used as both the
         // counter limit and threshold - counting only to a smaller number disables the guard.
-        int densityCap = BiomeTuning.resolveCap(baseDensity, BiomeTuning.densityMultiplier(level, pos));
-        if (densityCap == 0 || countNearbySaplings(level, pos, cfg, densityCap) >= densityCap) {
+        int densityCap = BiomeTuning.resolveCap(baseDensity, BiomeTuning.densityMultiplier(level, target));
+        if (densityCap == 0 || countNearbySaplings(level, target, cfg, densityCap) >= densityCap) {
             return 0;
         }
         // Per-species spread radius: a sapling never seeds beyond its parent's dispersal distance.
         if (type != null) {
-            int dx = Math.abs(anchor.pos().getX() - pos.getX());
-            int dz = Math.abs(anchor.pos().getZ() - pos.getZ());
+            int dx = Math.abs(anchor.pos().getX() - target.getX());
+            int dz = Math.abs(anchor.pos().getZ() - target.getZ());
             if (Math.max(dx, dz) > type.radius) {
                 return 0;
             }
@@ -124,7 +135,7 @@ public final class SaplingSpreadTask implements EcologyTask {
         if (Fallow.CONFIG.seasons.enabled) {
             // Phase-shifted per biome (e.g. savanna's acacia follows its summer wet season),
             // consistent with the vegetation growth/overcrowding seasons; from the per-tick cache.
-            Season season = SeasonClock.season().shifted(BiomeTuning.seasonPhase(level, pos));
+            Season season = SeasonClock.season().shifted(BiomeTuning.seasonPhase(level, target));
             rate *= type != null
                 ? type.seasonWeight(season, Fallow.CONFIG.seasons)
                 : Fallow.CONFIG.seasons.multiplier(season);
@@ -133,11 +144,34 @@ public final class SaplingSpreadTask implements EcologyTask {
             return 0;
         }
         BlockState state = sapling.defaultBlockState();
-        if (!state.canSurvive(level, pos)) {
+        if (!state.canSurvive(level, target)) {
             return 0;
         }
-        level.setBlock(pos, state, Block.UPDATE_ALL);
+        level.setBlock(target, state, Block.UPDATE_ALL);
         return 1;
+    }
+
+    /**
+     * Maps the pure {@link SaplingCluster} targeting onto the world for a mega-only species: a cell
+     * is "occupied" when a same-species sapling already stands there at the candidate's ground level
+     * (coplanar - a 2x2 only grows on flat ground), and "placeable" when it is empty, lit, and over
+     * dirt-family substrate the sapling can survive on. Returns the chosen position, or null when
+     * nothing within {@code clusterRadius} is plantable this event.
+     */
+    private static BlockPos clusterTarget(ServerLevel level, BlockPos pos, Block sapling, FallowConfig.Saplings cfg) {
+        int y = pos.getY();
+        BlockState saplingState = sapling.defaultBlockState();
+        int minLight = Fallow.CONFIG.vegetation.minLightLevel;
+        BlockPos.MutableBlockPos occ = new BlockPos.MutableBlockPos();
+        BlockPos.MutableBlockPos cell = new BlockPos.MutableBlockPos();
+        SaplingCluster.CellTest occupied = (x, z) -> level.getBlockState(occ.set(x, y, z)).is(sapling);
+        SaplingCluster.CellTest placeable = (x, z) ->
+            level.getBlockState(cell.set(x, y, z)).isAir()
+                && level.getBlockState(cell.set(x, y - 1, z)).is(BlockTags.SUBSTRATE_OVERWORLD)
+                && level.getMaxLocalRawBrightness(cell.set(x, y, z)) >= minLight
+                && saplingState.canSurvive(level, cell.set(x, y, z));
+        int[] chosen = SaplingCluster.chooseTarget(pos.getX(), pos.getZ(), cfg.clusterRadius, occupied, placeable);
+        return chosen == null ? null : new BlockPos(chosen[0], y, chosen[1]);
     }
 
     private static FallowConfig.Saplings.TreeType typeFor(Block sapling, FallowConfig.Saplings cfg) {

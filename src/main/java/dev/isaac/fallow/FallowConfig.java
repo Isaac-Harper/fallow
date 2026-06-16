@@ -277,6 +277,15 @@ public final class FallowConfig {
         public int densityRadius = 10;
         public int maxSaplingsNearby = 3;
         /**
+         * Mega-only species (dark/pale oak) can't grow as a lone sapling - four must align on a flat
+         * 2x2, which vanilla then grows. This is how far (Chebyshev) such a seed may be nudged from
+         * its rolled spot onto the cell that best advances a nearby partial 2x2: 1 keeps the spread
+         * very slow (a candidate must land within a block of a partial), higher completes clusters
+         * faster, 0 turns the nudge off (those species then align only by chance). Only affects
+         * {@code twoByTwo} types; see {@link dev.isaac.fallow.ecology.SaplingCluster}.
+         */
+        public int clusterRadius = 1;
+        /**
          * Per-tree tuning, keyed by sapling id. {@code rate} is an extra probability gate
          * (0..1) on top of the global chance; {@code radius} caps how far from the parent
          * tree's logs this type seeds (effective radius = min(radius, logSearchRadius));
@@ -293,6 +302,13 @@ public final class FallowConfig {
             public int radius = 8;
             /** Canopy closure: max saplings within densityRadius before this species stops seeding. */
             public int density = 3;
+            /**
+             * Mega-only species (dark/pale oak) that ONLY grow as a flat 2x2 - a lone sapling never
+             * matures. When true, seeds are nudged to build 2x2 clusters (see {@code clusterRadius}
+             * and {@link dev.isaac.fallow.ecology.SaplingCluster}); when false (the default, and all
+             * species with a single-tree form) a seed grows the small tree on its own.
+             */
+            public boolean twoByTwo = false;
             /**
              * Optional per-species seasonal timing of spread, grounded in the species' real seed
              * phenology (see docs/research.md section 5). When {@code null} (the common case) the species
@@ -317,6 +333,16 @@ public final class FallowConfig {
 
             TreeType(double rate, int radius, int density, SeasonWeights phenology) {
                 this(rate, radius, density);
+                this.phenology = phenology;
+            }
+
+            TreeType(double rate, int radius, int density, boolean twoByTwo) {
+                this(rate, radius, density);
+                this.twoByTwo = twoByTwo;
+            }
+
+            TreeType(double rate, int radius, int density, boolean twoByTwo, SeasonWeights phenology) {
+                this(rate, radius, density, twoByTwo);
                 this.phenology = phenology;
             }
 
@@ -353,8 +379,10 @@ public final class FallowConfig {
                 new SeasonWeights(1.0, 1.0, 1.0, 1.0)));
             map.put("minecraft:oak_sapling", new TreeType(0.6, 9, 4,           // white-oak group: acorns germinate in fall on dropping, no dormancy -> autumn ONLY
                 new SeasonWeights(0.0, 0.0, 1.0, 0.0)));
-            map.put("minecraft:dark_oak_sapling", new TreeType(0.5, 8, 6));    // red-oak-like chilling + jay-caching -> spring establishment -> shared curve
-            map.put("minecraft:pale_oak_sapling", new TreeType(0.35, 8, 4));   // relict; spring establishment + masting -> shared curve
+            // 2x2-only growers: no single-tree form, so seeds build clusters (twoByTwo=true). Caps
+            // raised so one finished cluster (4 saplings) doesn't self-lock the density box mid-build.
+            map.put("minecraft:dark_oak_sapling", new TreeType(0.5, 8, 10, true));   // jay-cached acorns -> spring establishment -> shared curve
+            map.put("minecraft:pale_oak_sapling", new TreeType(0.35, 8, 8, true));   // relict; spring establishment + masting -> shared curve
             return map;
         }
     }
