@@ -1,6 +1,8 @@
 {
   "item.fallow.season_clock": "Season Clock",
   "fallow.config.title": "Fallow",
+  "fallow.config.enabled": "Enable Fallow",
+  "fallow.config.enabled.tooltip": "Master switch. Fallow changes blocks over time and can be destructive, so it ships OFF. Nothing happens until this is on; the toggles below have no effect while it is off. Back up worlds you care about.",
   "fallow.config.vegetation": "Vegetation Sprouting",
   "fallow.config.vegetation.tooltip": "Grass, flowers, and bushes slowly fill in on grass blocks over time.",
   "fallow.config.short_grass": "Short Grass: %s%%",

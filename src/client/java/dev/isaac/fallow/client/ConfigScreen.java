@@ -34,6 +34,7 @@ public final class ConfigScreen extends Screen {
     private final Screen parent;
 
     // Working copies, seeded from the live config and committed on Done.
+    private boolean masterEnabled;
     private boolean vegetationEnabled;
     private double shortGrassChance;
     private double tallGrassChance;
@@ -60,6 +61,7 @@ public final class ConfigScreen extends Screen {
     }
 
     private void seedFrom(FallowConfig cfg) {
+        this.masterEnabled = cfg.enabled;
         this.vegetationEnabled = cfg.vegetation.enabled;
         this.shortGrassChance = cfg.vegetation.shortGrassChance;
         this.tallGrassChance = cfg.vegetation.tallGrassChance;
@@ -89,15 +91,24 @@ public final class ConfigScreen extends Screen {
         int cx = this.width / 2;
         int leftX = cx - WIDGET_WIDTH - COLUMN_GAP / 2;
         int rightX = cx + COLUMN_GAP / 2;
-        int top = this.height / 2 - (ROWS * ROW_SPACING) / 2;
+        // +1 row of headroom for the full-width master switch that sits above both columns.
+        int top = this.height / 2 - ((ROWS + 1) * ROW_SPACING) / 2;
 
         StringWidget titleWidget = new StringWidget(this.title, this.font);
         titleWidget.setX(cx - titleWidget.getWidth() / 2);
         titleWidget.setY(top - 28);
         addRenderableWidget(titleWidget);
 
+        // Master switch, full width above both columns: the whole mod is off until this is on.
+        addRenderableWidget(CycleButton.onOffBuilder(this.masterEnabled)
+            .withTooltip(v -> tip("fallow.config.enabled.tooltip"))
+            .create(leftX, top, WIDGET_WIDTH * 2 + COLUMN_GAP, WIDGET_HEIGHT,
+                Component.translatable("fallow.config.enabled"),
+                (button, value) -> this.masterEnabled = value));
+        int columnsTop = top + ROW_SPACING + 4;
+
         // --- Left column: ecology ---
-        int y = top;
+        int y = columnsTop;
         addRenderableWidget(CycleButton.onOffBuilder(this.vegetationEnabled)
             .withTooltip(v -> tip("fallow.config.vegetation.tooltip"))
             .create(leftX, y, WIDGET_WIDTH, WIDGET_HEIGHT,
@@ -142,7 +153,7 @@ public final class ConfigScreen extends Screen {
                 (button, value) -> this.overcrowdingEnabled = value));
 
         // --- Right column: seasons ---
-        y = top;
+        y = columnsTop;
         addRenderableWidget(CycleButton.onOffBuilder(this.seasonsEnabled)
             .withTooltip(v -> tip("fallow.config.seasons.tooltip"))
             .create(rightX, y, WIDGET_WIDTH, WIDGET_HEIGHT,
@@ -209,6 +220,7 @@ public final class ConfigScreen extends Screen {
 
     private void commit() {
         FallowConfig cfg = Fallow.CONFIG;
+        cfg.enabled = this.masterEnabled;
         cfg.vegetation.enabled = this.vegetationEnabled;
         cfg.vegetation.shortGrassChance = this.shortGrassChance;
         cfg.vegetation.tallGrassChance = this.tallGrassChance;
