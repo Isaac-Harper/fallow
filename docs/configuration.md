@@ -14,9 +14,17 @@ load** to the ranges below - out-of-range hand edits are silently corrected, nev
 - **"chance" fields** clamp to `[0.0, 1.0]`; **season multipliers** to `[0.0, 10.0]`;
   **day portions** to `[0.05, 0.95]`.
 
-Top-level objects: `scheduler`, `vegetation`, `dieback`, `saplings`, `trails`, `leafLitter`,
-`overcrowding`, `flowerWilt`, `shoreline`, `seasons`, `dayNight`, `visuals`, `precipitation`,
-`events`, `fruiting`.
+Top-level fields: `enabled` (the master switch, below), then the objects `scheduler`,
+`vegetation`, `dieback`, `saplings`, `trails`, `leafLitter`, `overcrowding`, `flowerWilt`,
+`shoreline`, `bamboo`, `seasons`, `dayNight`, `visuals`, `precipitation`, `events`, `fruiting`.
+
+---
+
+## enabled - master switch
+
+| field | default | range | meaning |
+|---|---|---|---|
+| `enabled` | `false` | bool | Master on/off. Fallow modifies blocks over time (effectively destructive), so it ships **off**: while `false` nothing touches the world, the day length, or temperature, regardless of the per-system toggles below. Set `true` and `/fallow reload` to turn the mod on. Players get a one-time in-game notice on first join either way. |
 
 ---
 

@@ -57,7 +57,8 @@ public final class TrailSystem {
 
     private static void tick(ServerLevel level) {
         FallowConfig cfg = Fallow.CONFIG;
-        if (!cfg.trails.enabled || !cfg.scheduler.dimensions.contains(level.dimension().identifier().toString())) {
+        if (!cfg.enabled || !cfg.trails.enabled
+            || !cfg.scheduler.dimensions.contains(level.dimension().identifier().toString())) {
             return;
         }
         Transient state = transients.computeIfAbsent(level, l -> new Transient());

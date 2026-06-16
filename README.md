@@ -26,6 +26,20 @@ place, never jarring while you stand in it, and growth pauses at night like vani
 spread. The whole simulation runs on a tick-budgeted scheduler measured in tens of
 microseconds per tick at defaults, with hard caps no matter the config.
 
+## Warning: this mod changes your world
+
+Fallow is a slow, world-altering mod. While chunks are loaded it permanently edits vanilla
+blocks over time: grass and flowers spread, dirt paths wear into the ground underfoot, trees
+and bamboo spread, snow accumulates and melts, water freezes and thaws, and plants left in the
+dark decay toward dirt. It adds no new blocks and leaves no trace if removed, but the changes it
+makes to existing blocks are permanent and can be considered destructive. So:
+
+- **Fallow ships DISABLED by default.** Nothing in your world changes until you turn it on.
+- **Back up any world you care about before enabling it.**
+- To enable: set `"enabled": true` in `config/fallow.json` and run `/fallow reload` (or relaunch).
+- The first time you join a world with Fallow installed you will get a one-time in-game notice
+  of this, whether the mod is on or off.
+
 ## Highlights
 
 - **Server-side gameplay, zero gameplay mixins.** All simulation is Fabric lifecycle events +

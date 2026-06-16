@@ -18,6 +18,7 @@ import dev.isaac.fallow.growth.GrowthRateProvider;
 import dev.isaac.fallow.growth.SeasonalGrowthRates;
 import dev.isaac.fallow.item.FallowItems;
 import dev.isaac.fallow.network.SeasonSyncPayload;
+import dev.isaac.fallow.notice.FirstJoinNotice;
 import dev.isaac.fallow.season.PrecipitationBiomes;
 import dev.isaac.fallow.season.SeasonEventService;
 import dev.isaac.fallow.season.SeasonService;
@@ -75,6 +76,7 @@ public class Fallow implements ModInitializer {
         EcologyScheduler.registerTask(new FruitDropTask());
         TrailSystem.register();
         FallowCommands.register();
+        FirstJoinNotice.register(); // one-time "this mod changes blocks" notice, shown even when disabled
 
         LOGGER.info("Fallow initialized");
     }

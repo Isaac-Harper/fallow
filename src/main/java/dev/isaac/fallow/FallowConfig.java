@@ -26,6 +26,14 @@ import java.util.Map;
 public final class FallowConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
+    /**
+     * Master switch. Fallow modifies blocks in the world over time (vegetation, dirt paths, trees,
+     * bamboo, snow, plant decay), which is effectively destructive, so it ships <b>off</b>: nothing
+     * touches the world, the day length, or temperature until this is set true. Players still get a
+     * one-time in-game notice on first join either way.
+     */
+    public boolean enabled = false;
+
     public Scheduler scheduler = new Scheduler();
     public Vegetation vegetation = new Vegetation();
     public Dieback dieback = new Dieback();

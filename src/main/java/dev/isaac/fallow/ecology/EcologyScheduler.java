@@ -66,7 +66,7 @@ public final class EcologyScheduler {
     private static void tick(ServerLevel level) {
         FallowConfig cfg = Fallow.CONFIG;
         WorldState ws = WORLDS.get(level);
-        if (ws == null || !cfg.scheduler.enabled || TASKS.isEmpty()) {
+        if (ws == null || !cfg.enabled || !cfg.scheduler.enabled || TASKS.isEmpty()) {
             return;
         }
         if (!cfg.scheduler.dimensions.contains(ws.dimensionId)) {

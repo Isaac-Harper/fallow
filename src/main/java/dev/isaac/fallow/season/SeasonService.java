@@ -50,9 +50,13 @@ public final class SeasonService {
         ServerTickEvents.START_SERVER_TICK.register(SeasonService::cacheClock);
         ServerTickEvents.END_SERVER_TICK.register(SeasonService::tick);
         ServerLifecycleEvents.SERVER_STOPPING.register(SeasonService::onStopping);
-        // New joiners get the current season immediately (drives client foliage tinting).
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
-            sender.sendPacket(currentSync(server)));
+        // New joiners get the current season immediately (drives client foliage tinting) - but only
+        // while Fallow is active, so a disabled mod leaves clients fully vanilla.
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            if (Fallow.CONFIG.enabled) {
+                sender.sendPacket(currentSync(server));
+            }
+        });
     }
 
     /** Force the next tick to re-evaluate and re-apply the rate (config reload, season set). */
@@ -89,6 +93,17 @@ public final class SeasonService {
 
     private static void tick(MinecraftServer server) {
         FallowConfig cfg = Fallow.CONFIG;
+        if (!cfg.enabled) {
+            // Master switch off: keep the world fully vanilla - no seasonal temperature shift (so
+            // vanilla never snows/freezes on our account) and restore the vanilla day length if we
+            // ever changed it.
+            SeasonalTemperature.set(0.0f);
+            if (!Float.isNaN(appliedRate) && appliedRate != 1.0f) {
+                overworldClock(server).ifPresent(c -> server.clockManager().setRate(c, 1.0f));
+                appliedRate = 1.0f;
+            }
+            return;
+        }
         Optional<Holder.Reference<WorldClock>> clock = overworldClock(server);
         if (clock.isEmpty()) {
             return;

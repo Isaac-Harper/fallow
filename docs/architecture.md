@@ -23,6 +23,20 @@ END_SERVER_TICK --> SeasonService --> SeasonState (SavedData, one record)
                           +--------> ServerClockManager.setRate (day/night split)
 ```
 
+## Master switch and first-join notice
+
+Fallow edits vanilla blocks over time, so it is opt-in: the top-level config `enabled` defaults to
+`false`, and every system that writes blocks (or drives vanilla into writing them) checks it. When
+off: `EcologyScheduler` and `TrailSystem` early-return their tick; `SeasonService` holds
+`SeasonalTemperature` at 0 (so the `BiomeTemperatureMixin` never nudges vanilla into snowing or
+freezing) and restores the vanilla clock rate; and no season payload is sent, so clients stay
+fully vanilla (no tint). Flip `enabled` true + `/fallow reload` to activate.
+
+Regardless of the switch, `notice/FirstJoinNotice` sends each player a one-time chat notice on
+first join that the mod alters blocks and is destructive, with the current on/off state and how to
+change it. "Seen" is tracked per player UUID in `notice/NoticeData` (one small overworld SavedData),
+so it shows exactly once. Plain literal text, so it renders on vanilla clients too.
+
 ## Ecology scheduler
 
 `ecology/EcologyScheduler` is a generic engine; behaviors are `EcologyTask`s registered at

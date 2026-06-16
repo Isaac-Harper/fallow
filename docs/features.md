@@ -2,7 +2,13 @@
 
 Fallow turns the overworld into a slow, living world: four seasons cycle, days lengthen and
 shorten, weather turns to snow and back, and vegetation grows, spreads, ages, and dies back over
-many in-game days. Everything below is on by default and can be tuned or switched off.
+many in-game days.
+
+**Heads up: Fallow changes blocks in your world over time, which is effectively destructive, so it
+ships DISABLED by default.** Nothing below happens until you turn it on (set `"enabled": true` in
+`config/fallow.json` and run `/fallow reload`); back up worlds you care about first. The first time
+you join a world with Fallow installed you get a one-time in-game notice of this. Once enabled, each
+feature below is individually on by default and can be tuned or switched off.
 
 This is the plain-language tour of *what* Fallow does. For knobs and defaults see
 [configuration.md](configuration.md); for how it works under the hood see
