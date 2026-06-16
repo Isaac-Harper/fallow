@@ -185,8 +185,9 @@ hand edits are corrected, not rejected), live-swapped by `/fallow reload` (read 
 fresh, never cache fields). Twelve sections: `scheduler`, `vegetation`, `dieback`, `saplings`,
 `trails`, `leafLitter`, `overcrowding`, `flowerWilt`, `shoreline`, `seasons`, `dayNight`,
 `visuals`. Mod Menu screen (vanilla widgets, no Cloth Config - matching Shulker Pocket) edits
-the common toggles + a few sliders; JSON holds everything (per-biome maps, per-tree types,
-all rates). Singleplayer screen edits apply immediately (same JVM); dedicated servers need
+the master switch + per-feature on/off toggles only, kept toggles-only so it stays padded and
+fits any GUI scale; JSON holds everything else (all numeric rates, per-biome maps, per-tree
+types). Singleplayer screen edits apply immediately (same JVM); dedicated servers need
 `/fallow reload`. **Full field-by-field reference with defaults and ranges:**
 [configuration.md](configuration.md).
 

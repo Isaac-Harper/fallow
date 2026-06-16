@@ -1,8 +1,9 @@
 # Fallow - configuration reference
 
 Every option in `config/fallow.json`, with its default and valid range. The file is written
-with defaults on first launch. Edit it by hand, through the **Mod Menu** screen (the common
-toggles + a few sliders), or on a live server with `/fallow reload`. Values are **clamped on
+with defaults on first launch. Edit it by hand, through the **Mod Menu** screen (the master
+switch + per-feature on/off toggles; numeric values are file-only), or on a live server with
+`/fallow reload`. Values are **clamped on
 load** to the ranges below - out-of-range hand edits are silently corrected, never rejected.
 
 - **Server-side.** The simulation runs on the server; the config lives with the server/world.
