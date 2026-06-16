@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.isaac.fallow.mixin",
+  "compatibilityLevel": "${java}",
+  "mixins": [
+    "BiomeTemperatureMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

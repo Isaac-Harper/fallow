@@ -1,0 +1,41 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "fallow:season",
+    "entries": [
+      { "threshold": 0.00000, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_00" } },
+      { "threshold": 0.03125, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_01" } },
+      { "threshold": 0.06250, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_02" } },
+      { "threshold": 0.09375, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_03" } },
+      { "threshold": 0.12500, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_04" } },
+      { "threshold": 0.15625, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_05" } },
+      { "threshold": 0.18750, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_06" } },
+      { "threshold": 0.21875, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_07" } },
+      { "threshold": 0.25000, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_08" } },
+      { "threshold": 0.28125, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_09" } },
+      { "threshold": 0.31250, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_10" } },
+      { "threshold": 0.34375, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_11" } },
+      { "threshold": 0.37500, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_12" } },
+      { "threshold": 0.40625, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_13" } },
+      { "threshold": 0.43750, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_14" } },
+      { "threshold": 0.46875, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_15" } },
+      { "threshold": 0.50000, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_16" } },
+      { "threshold": 0.53125, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_17" } },
+      { "threshold": 0.56250, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_18" } },
+      { "threshold": 0.59375, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_19" } },
+      { "threshold": 0.62500, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_20" } },
+      { "threshold": 0.65625, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_21" } },
+      { "threshold": 0.68750, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_22" } },
+      { "threshold": 0.71875, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_23" } },
+      { "threshold": 0.75000, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_24" } },
+      { "threshold": 0.78125, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_25" } },
+      { "threshold": 0.81250, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_26" } },
+      { "threshold": 0.84375, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_27" } },
+      { "threshold": 0.87500, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_28" } },
+      { "threshold": 0.90625, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_29" } },
+      { "threshold": 0.93750, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_30" } },
+      { "threshold": 0.96875, "model": { "type": "minecraft:model", "model": "fallow:item/season_clock_31" } }
+    ],
+    "fallback": { "type": "minecraft:model", "model": "fallow:item/season_clock_00" }
+  }
+}

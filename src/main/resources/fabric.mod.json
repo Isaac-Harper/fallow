@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "fallow",
+  "version": "${version}",
+  "name": "Fallow",
+  "description": "Seasons with a living ecology. Vegetation sprouts and spreads on a tick-budgeted scheduler; seasons shift growth rates and the day/night split.",
+  "authors": [
+    "Isaac Harper"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.isaac.fallow.Fallow"
+    ],
+    "client": [
+      "dev.isaac.fallow.client.FallowClient"
+    ],
+    "modmenu": [
+      "dev.isaac.fallow.client.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "fallow.mixins.json",
+    {
+      "config": "fallow.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "${minecraft}",
+    "java": ">=${java}",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "modmenu": ">=18.0.0"
+  }
+}

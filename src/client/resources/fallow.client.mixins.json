@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "dev.isaac.fallow.client.mixin",
+  "compatibilityLevel": "${java}",
+  "client": [
+    "BiomeMixin",
+    "LeafFallMixin",
+    "RangeSelectItemModelPropertiesMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

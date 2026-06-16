@@ -1,0 +1,37 @@
+# Gradle / Loom
+.gradle/
+build/
+run/
+.loom-cache/
+.fabric/
+versions/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Eclipse / VS Code
+.classpath
+.project
+.settings/
+bin/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Local-only dev notes (not published)
+AGENTS.md
+
+# Study-only decompiles/clones (license unverified or third-party; never ship from here)
+reference/
+
+# Minecraft runtime logs
+logs/
+
+# Secrets / local env (never commit)
+.env
+.env.*
