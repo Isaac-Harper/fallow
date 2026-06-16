@@ -24,7 +24,7 @@ import net.minecraft.network.chat.Component;
 public final class ConfigScreen extends Screen {
     private static final int WIDGET_WIDTH = 200;
     private static final int WIDGET_HEIGHT = 20;
-    private static final int ROW_SPACING = 24;
+    private static final int ROW_SPACING = 30;
     private static final int COLUMN_GAP = 10;
     /** Most rows in either column (left has 5, right has 6); drives the fit-to-window spacing. */
     private static final int ROWS = 6;
