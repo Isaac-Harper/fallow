@@ -110,9 +110,13 @@ public final class ConfigScreen extends Screen {
         // The columns fill the gap between the master switch and the bottom button row; row spacing
         // shrinks on short windows (down to flush) so the lowest rows never overlap the buttons.
         int by = this.height - 28;
-        int columnsTop = masterY + WIDGET_HEIGHT + 8;
+        int regionTop = masterY + WIDGET_HEIGHT + 8;
         int rowSpacing = Math.max(WIDGET_HEIGHT,
-            Math.min(ROW_SPACING, ((by - 6 - columnsTop) - WIDGET_HEIGHT) / (ROWS - 1)));
+            Math.min(ROW_SPACING, ((by - 6 - regionTop) - WIDGET_HEIGHT) / (ROWS - 1)));
+        // Center the column block in the space between the master switch and the buttons, so tall
+        // windows look balanced; on short windows the offset is zero and it sits just below master.
+        int blockHeight = (ROWS - 1) * rowSpacing + WIDGET_HEIGHT;
+        int columnsTop = regionTop + Math.max(0, (by - 6 - regionTop - blockHeight) / 2);
 
         // --- Left column: ecology ---
         int y = columnsTop;
