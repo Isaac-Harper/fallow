@@ -101,15 +101,3 @@ by biome:
   `daysPerSeason()`); plus `season(server)`, `enabled()`, `growthMultiplier(server)`.
 - `Season` - enum `SPRING`/`SUMMER`/`AUTUMN`/`WINTER`, with a `Codec`, `next()`, `id()`, and
   `byId(String)`.
-
-## Documentation
-
-- [docs/configuration.md](docs/configuration.md) - every config field, default, and range.
-- [docs/architecture.md](docs/architecture.md) - how every system works internally.
-- [docs/research.md](docs/research.md) - Phase 0 research (Gaia's Breath, 26.1 world clocks).
-
-## Development
-
-JDK 25. `./gradlew build` (compiles + runs the JUnit suite), `runClient`, `runServer`.
-Stonecutter single-node (26.1.2), Fabric Loom via loom-back-compat, split `main`/`client`
-source sets. See [docs/architecture.md](docs/architecture.md).
