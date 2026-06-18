@@ -167,6 +167,15 @@ This is the plain-language tour of *what* Fallow does. For knobs and defaults se
 
 - **Seasonal color** - grass and foliage tint shifts with the season, so the world reads as green
   in spring/summer, warm and orange in autumn, and muted in winter.
+- **Recolored autumn leaves** - because tinting can only darken the grey leaf textures (a yellow
+  tint just reads as olive), the strongest autumn species swap to dedicated recolored textures
+  while it is autumn: birch turns golden, oak orange, dark oak deep russet, and cherry deep
+  crimson (its drifting leaf particles turn crimson to match, instead of the pink blossom petal).
+  Birch also goes a bare, muted brown in winter. Every other season stays vanilla.
+- **Spruce frost-muting** - spruce stays evergreen all year, with only a subtle cold-muted shift
+  in deep winter.
+- **Lily pads turn too** - lily pads green up in spring, yellow-brown in autumn, and fade to brown
+  in winter.
 - **Falling leaves in autumn** - leaves drift down in a flurry through autumn and only lightly the
   rest of the year, timed to match the leaf litter building up on the forest floor.
 - **Smooth transitions** - colors drift day by day between seasons rather than snapping.

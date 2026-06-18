@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 public final class FallowClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        SeasonalLeafModels.register();
         ClientPlayNetworking.registerGlobalReceiver(SeasonSyncPayload.ID,
             (payload, context) -> FallowClientSeasons.onSync(payload));
         ClientTickEvents.END_CLIENT_TICK.register(FallowClientSeasons::tickDimensionWatch);

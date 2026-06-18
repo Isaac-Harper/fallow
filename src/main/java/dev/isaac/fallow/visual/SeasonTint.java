@@ -17,6 +17,22 @@ public final class SeasonTint {
         GRASS,
         FOLIAGE,
         DRY_FOLIAGE,
+        /**
+         * Birch leaves. Vanilla gives birch a fixed (non-biome) color, so it needs its own tint
+         * path; unlike the broadleaf {@link #FOLIAGE} that turns orange, birch goes golden yellow
+         * in autumn, the way real birch does.
+         */
+        BIRCH_FOLIAGE,
+        /**
+         * Spruce leaves (also a fixed vanilla color). Spruce is a coniferous evergreen, so it does
+         * not turn in autumn; the only shift is a subtle frost-muting in winter.
+         */
+        SPRUCE_FOLIAGE,
+        /**
+         * Lily pads (fixed vanilla color). They green up in spring, yellow-brown in autumn, and die
+         * back to brown in winter.
+         */
+        LILY_PAD,
     }
 
     /** Blend parameters: {@code strength} 0..1 toward {@code targetRgb}. */
@@ -36,20 +52,30 @@ public final class SeasonTint {
     public static Params seasonParams(Season season, Kind kind) {
         return switch (season) {
             case SPRING -> switch (kind) {
-                case GRASS -> new Params(0.35f, 0x6FE32C);      // vivid fresh yellow-green
-                case FOLIAGE -> new Params(0.32f, 0x63DA28);
-                case DRY_FOLIAGE -> new Params(0.20f, 0x8FD24A);
+                case GRASS -> new Params(0.45f, 0x6FE32C);      // vivid fresh yellow-green
+                case FOLIAGE -> new Params(0.44f, 0x63DA28);
+                case DRY_FOLIAGE -> new Params(0.28f, 0x8FD24A);
+                case BIRCH_FOLIAGE -> new Params(0.42f, 0x9ADF4E); // bright pale birch green
+                case SPRUCE_FOLIAGE -> Params.NONE;             // evergreen: no spring flush
+                case LILY_PAD -> new Params(0.32f, 0x6FE32C);   // fresh growth
             };
             case SUMMER -> Params.NONE;                          // identity: vanilla look
             case AUTUMN -> switch (kind) {
-                case GRASS -> new Params(0.65f, 0xC8902A);      // golden, clearly turned
-                case FOLIAGE -> new Params(0.80f, 0xCE5A12);    // strong orange
-                case DRY_FOLIAGE -> new Params(0.55f, 0xB05418);
+                case GRASS -> new Params(0.78f, 0xC8902A);      // golden, clearly turned
+                case FOLIAGE -> new Params(0.92f, 0xCE5A12);    // strong orange
+                case DRY_FOLIAGE -> new Params(0.68f, 0xB05418);
+                case BIRCH_FOLIAGE -> new Params(1.0f, 0xF2E40D);  // full-strength vivid yellow
+                                                                   // (grey texture -> tint is the hue)
+                case SPRUCE_FOLIAGE -> Params.NONE;             // evergreen: stays green
+                case LILY_PAD -> new Params(0.72f, 0xC9A52E);   // yellow-brown
             };
             case WINTER -> switch (kind) {
-                case GRASS -> new Params(0.62f, 0xAEB29A);      // pale dormant grey-tan
-                case FOLIAGE -> new Params(0.60f, 0x9E9778);    // drab faded olive
-                case DRY_FOLIAGE -> new Params(0.45f, 0x9C8F76);
+                case GRASS -> new Params(0.72f, 0xAEB29A);      // pale dormant grey-tan
+                case FOLIAGE -> new Params(0.72f, 0x9E9778);    // drab faded olive
+                case DRY_FOLIAGE -> new Params(0.55f, 0x9C8F76);
+                case BIRCH_FOLIAGE -> new Params(0.70f, 0xBCAE84); // bare, washed-out tan
+                case SPRUCE_FOLIAGE -> new Params(0.30f, 0x7C8A78); // subtle frost-muted green
+                case LILY_PAD -> new Params(0.78f, 0x8C7338);   // brown dieback
             };
         };
     }

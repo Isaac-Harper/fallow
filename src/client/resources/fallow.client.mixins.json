@@ -4,6 +4,8 @@
   "compatibilityLevel": "${java}",
   "client": [
     "BiomeMixin",
+    "CherryLeafParticleMixin",
+    "FixedFoliageTintMixin",
     "LeafFallMixin",
     "RangeSelectItemModelPropertiesMixin"
   ],
