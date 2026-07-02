@@ -19,8 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * {@code compass}, ...) so the Season Clock's model can dispatch on it. The property-type registry is
  * a private {@code LateBoundIdMapper} populated only in {@link RangeSelectItemModelProperties#bootstrap()},
  * and there is no Fabric event or API to add to it - so a one-line {@code TAIL} inject is the only
- * way in. Client cosmetic, no behavior change to vanilla properties: the deliberate fourth mixin,
- * held to the same "no other hook exists" bar as the other three.
+ * way in. Client cosmetic, no behavior change to vanilla properties: a deliberate mixin, held to
+ * the same "no other hook exists" bar as every Fallow mixin.
  */
 @Mixin(RangeSelectItemModelProperties.class)
 public class RangeSelectItemModelPropertiesMixin {

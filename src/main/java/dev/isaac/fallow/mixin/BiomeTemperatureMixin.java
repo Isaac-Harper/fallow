@@ -1,6 +1,6 @@
 package dev.isaac.fallow.mixin;
 
-import dev.isaac.fallow.growth.BiomeTuning;
+import dev.isaac.fallow.biome.BiomeTuning;
 import dev.isaac.fallow.season.SeasonalTemperature;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.biome.Biome;

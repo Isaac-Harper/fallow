@@ -2,7 +2,7 @@ package dev.isaac.fallow.ecology;
 
 import dev.isaac.fallow.Fallow;
 import dev.isaac.fallow.FallowConfig;
-import dev.isaac.fallow.growth.BiomeTuning;
+import dev.isaac.fallow.biome.BiomeTuning;
 import dev.isaac.fallow.season.SeasonEvents;
 import dev.isaac.fallow.season.SeasonalTemperature;
 import net.minecraft.core.BlockPos;

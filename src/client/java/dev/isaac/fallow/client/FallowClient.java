@@ -1,6 +1,6 @@
 package dev.isaac.fallow.client;
 
-import dev.isaac.fallow.growth.BiomeTuning;
+import dev.isaac.fallow.biome.BiomeTuning;
 import dev.isaac.fallow.network.SeasonSyncPayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;

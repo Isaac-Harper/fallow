@@ -1,5 +1,6 @@
 package dev.isaac.fallow;
 
+import dev.isaac.fallow.biome.BiomeTuning;
 import dev.isaac.fallow.command.FallowCommands;
 import dev.isaac.fallow.ecology.BambooSpreadTask;
 import dev.isaac.fallow.ecology.DiebackTask;
@@ -13,7 +14,6 @@ import dev.isaac.fallow.ecology.SaplingSpreadTask;
 import dev.isaac.fallow.ecology.ShorelineCreepTask;
 import dev.isaac.fallow.ecology.VegetationSproutTask;
 import dev.isaac.fallow.growth.BiomeGrowthRates;
-import dev.isaac.fallow.growth.BiomeTuning;
 import dev.isaac.fallow.growth.ConfigGrowthRates;
 import dev.isaac.fallow.growth.GrowthRateProvider;
 import dev.isaac.fallow.growth.SeasonalGrowthRates;
@@ -32,9 +32,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Common entrypoint. Simulation is server-side, driven by Fabric lifecycle events. Three mixins:
- * two client-side cosmetic ({@code BiomeMixin} seasonal foliage tint, {@code LeafFallMixin}
- * seasonal falling-leaf particles) and one common gameplay ({@code BiomeTemperatureMixin}, the
+ * Common entrypoint. Simulation is server-side, driven by Fabric lifecycle events. Six mixins:
+ * five client-side cosmetic ({@code BiomeMixin} seasonal foliage tint, {@code FixedFoliageTintMixin}
+ * birch/spruce/lily-pad tints, {@code LeafFallMixin} seasonal falling-leaf particles,
+ * {@code CherryLeafParticleMixin} seasonal cherry petals, {@code RangeSelectItemModelPropertiesMixin}
+ * the season_clock item-model property) and one common gameplay ({@code BiomeTemperatureMixin}, the
  * seasonal-temperature precipitation lever - the deliberate exception to the otherwise
  * events-and-public-APIs rule). The client source set also adds the Mod Menu config screen.
  */

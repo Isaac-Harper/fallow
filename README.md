@@ -46,10 +46,12 @@ makes to existing blocks are permanent and can be considered destructive. So:
 
 ## Highlights
 
-- **Server-side gameplay, zero gameplay mixins.** All simulation is Fabric lifecycle events +
-  vanilla APIs. Day length uses the vanilla 26.1 world-clock rate (the `/time set rate`
-  mechanism), so it's multiplayer-safe with native client sync, and beds and `/time set` just
-  work. The mod's *only* mixin is a client-side cosmetic one for the seasonal foliage tint.
+- **Server-side gameplay, mixins held to a "no other hook exists" bar.** All simulation is
+  Fabric lifecycle events + vanilla APIs. Day length uses the vanilla 26.1 world-clock rate (the
+  `/time set rate` mechanism), so it's multiplayer-safe with native client sync, and beds and
+  `/time set` just work. One gameplay mixin exists (the seasonal-temperature lever that makes
+  vanilla snow in winter and rain in summer); the other five are client-side cosmetics for the
+  seasonal tints, particles, and the Season Clock's dial.
 - **Existing worlds welcome.** No new blocks, no world reset. The entire persistent footprint
   is two small saved-data records (season state + per-dimension trail wear); remove the mod
   and nothing breaks.

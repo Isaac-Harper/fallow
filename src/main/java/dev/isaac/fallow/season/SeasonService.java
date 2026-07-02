@@ -2,7 +2,7 @@ package dev.isaac.fallow.season;
 
 import dev.isaac.fallow.Fallow;
 import dev.isaac.fallow.FallowConfig;
-import dev.isaac.fallow.growth.BiomeTuning;
+import dev.isaac.fallow.biome.BiomeTuning;
 import dev.isaac.fallow.network.SeasonSyncPayload;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;

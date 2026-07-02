@@ -2,6 +2,7 @@ package dev.isaac.fallow.growth;
 
 import dev.isaac.fallow.Fallow;
 import dev.isaac.fallow.api.Season;
+import dev.isaac.fallow.biome.BiomeTuning;
 import dev.isaac.fallow.season.SeasonClock;
 import dev.isaac.fallow.season.SeasonEvents;
 import net.minecraft.core.BlockPos;

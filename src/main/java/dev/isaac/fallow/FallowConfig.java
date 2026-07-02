@@ -463,12 +463,7 @@ public final class FallowConfig {
         public double winterFall = 0.5;
 
         public double leafFallWeight(Season season) {
-            return switch (season) {
-                case SPRING -> springFall;
-                case SUMMER -> summerFall;
-                case AUTUMN -> autumnFall;
-                case WINTER -> winterFall;
-            };
+            return bySeason(season, springFall, summerFall, autumnFall, winterFall);
         }
     }
 
@@ -499,12 +494,7 @@ public final class FallowConfig {
         public double winterDensity = 0.4;
 
         public double densityFactor(Season season) {
-            return switch (season) {
-                case SPRING -> springDensity;
-                case SUMMER -> summerDensity;
-                case AUTUMN -> autumnDensity;
-                case WINTER -> winterDensity;
-            };
+            return bySeason(season, springDensity, summerDensity, autumnDensity, winterDensity);
         }
     }
 
@@ -577,21 +567,12 @@ public final class FallowConfig {
         public double winterDecayMultiplier = 3.0;
 
         public double multiplier(Season season) {
-            return switch (season) {
-                case SPRING -> springMultiplier;
-                case SUMMER -> summerMultiplier;
-                case AUTUMN -> autumnMultiplier;
-                case WINTER -> winterMultiplier;
-            };
+            return bySeason(season, springMultiplier, summerMultiplier, autumnMultiplier, winterMultiplier);
         }
 
         public double decayMultiplier(Season season) {
-            return switch (season) {
-                case SPRING -> springDecayMultiplier;
-                case SUMMER -> summerDecayMultiplier;
-                case AUTUMN -> autumnDecayMultiplier;
-                case WINTER -> winterDecayMultiplier;
-            };
+            return bySeason(season,
+                springDecayMultiplier, summerDecayMultiplier, autumnDecayMultiplier, winterDecayMultiplier);
         }
     }
 
@@ -609,12 +590,7 @@ public final class FallowConfig {
         public double winterDayPortion = 0.375;
 
         public double dayPortion(Season season) {
-            return switch (season) {
-                case SPRING -> springDayPortion;
-                case SUMMER -> summerDayPortion;
-                case AUTUMN -> autumnDayPortion;
-                case WINTER -> winterDayPortion;
-            };
+            return bySeason(season, springDayPortion, summerDayPortion, autumnDayPortion, winterDayPortion);
         }
     }
 
@@ -666,12 +642,7 @@ public final class FallowConfig {
         public double winterRainfall = 0.6;
 
         public double rainfall(Season season) {
-            return switch (season) {
-                case SPRING -> springRainfall;
-                case SUMMER -> summerRainfall;
-                case AUTUMN -> autumnRainfall;
-                case WINTER -> winterRainfall;
-            };
+            return bySeason(season, springRainfall, summerRainfall, autumnRainfall, winterRainfall);
         }
         /**
          * Per-biome maximum snow depth (layers, 1-8), same key format as {@code biomePrecip}.
@@ -683,12 +654,7 @@ public final class FallowConfig {
         public Map<String, Double> snowDepth = defaultSnowDepth();
 
         public double tempOffset(Season season) {
-            return switch (season) {
-                case SPRING -> springTempOffset;
-                case SUMMER -> summerTempOffset;
-                case AUTUMN -> autumnTempOffset;
-                case WINTER -> winterTempOffset;
-            };
+            return bySeason(season, springTempOffset, summerTempOffset, autumnTempOffset, winterTempOffset);
         }
 
         private static Map<String, Boolean> defaultBiomePrecip() {
@@ -939,6 +905,20 @@ public final class FallowConfig {
         if (precipitation.snowDepth != null) {
             precipitation.snowDepth.replaceAll((k, v) -> Math.max(1.0, Math.min(8.0, v)));
         }
+    }
+
+    /**
+     * Pick the value for {@code season} from four flat per-season fields. Sections keep the four
+     * fields flat (not a nested {@link SeasonWeights}) so existing hand-tuned JSON keeps working;
+     * this is the one switch over them, so a season can't be miswired in any single section.
+     */
+    static double bySeason(Season season, double spring, double summer, double autumn, double winter) {
+        return switch (season) {
+            case SPRING -> spring;
+            case SUMMER -> summer;
+            case AUTUMN -> autumn;
+            case WINTER -> winter;
+        };
     }
 
     /** Seasonal temperature offsets stay within a sane band (+/-2.0 spans any biome's class). */

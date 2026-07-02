@@ -100,7 +100,7 @@ class FallowConfigTest {
         assertTrue(bs.get("#minecraft:is_jungle") < bs.get("#minecraft:is_savanna"));
         // An amplified winter must actually reach zero growth at the boreal default.
         double winter = new FallowConfig().seasons.winterMultiplier;
-        assertEquals(0.0, dev.isaac.fallow.growth.BiomeTuning.applySeasonality(bs.get("#minecraft:is_taiga"), winter), 1e-9);
+        assertEquals(0.0, dev.isaac.fallow.biome.BiomeTuning.applySeasonality(bs.get("#minecraft:is_taiga"), winter), 1e-9);
     }
 
     @Test
