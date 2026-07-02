@@ -3,6 +3,8 @@ package dev.isaac.fallow.ecology;
 import dev.isaac.fallow.Fallow;
 import dev.isaac.fallow.FallowConfig;
 import dev.isaac.fallow.api.Season;
+import dev.isaac.fallow.growth.GrowthChannel;
+import dev.isaac.fallow.growth.GrowthRateProvider;
 import dev.isaac.fallow.season.SeasonClock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -28,6 +30,12 @@ import java.util.Optional;
  * cabins and leaf builds never fruit, consistent with the sapling/leaf-litter heuristic.
  */
 public final class FruitDropTask implements EcologyTask {
+    private final GrowthRateProvider rates;
+
+    public FruitDropTask(GrowthRateProvider rates) {
+        this.rates = rates;
+    }
+
     @Override
     public String id() {
         return "fruiting";
@@ -76,7 +84,7 @@ public final class FruitDropTask implements EcologyTask {
     }
 
     /** Look up for a natural fruiting canopy; return its entry if in season and the roll passes. */
-    private static FallowConfig.Fruiting.FruitType canopyFruit(ServerLevel level, BlockPos spot,
+    private FallowConfig.Fruiting.FruitType canopyFruit(ServerLevel level, BlockPos spot,
             FallowConfig.Fruiting cfg, Season season, RandomSource random) {
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos(spot.getX(), spot.getY(), spot.getZ());
         int maxY = level.getMaxY();
@@ -92,11 +100,18 @@ public final class FruitDropTask implements EcologyTask {
             if (type == null) {
                 continue;
             }
-            Season fruitSeason = Season.byId(type.season);
-            if (fruitSeason != null && fruitSeason != season) {
-                return null;
+            // Per-type season gate (an unknown season string is nulled with a warning at config
+            // load). With seasons disabled the clock is frozen, so every type is in season.
+            if (Fallow.CONFIG.seasons.enabled) {
+                Season fruitSeason = Season.byId(type.season);
+                if (fruitSeason != null && fruitSeason != season) {
+                    return null;
+                }
             }
-            return random.nextFloat() < type.chance ? type : null;
+            // Per-type base chance x the provider stack's scaling (biome growth, heatwave stall;
+            // the FRUIT channel is curve-exempt because the season gate above is the curve).
+            return random.nextFloat() < type.chance * rates.chance(GrowthChannel.FRUIT, level, spot)
+                ? type : null;
         }
         return null;
     }

@@ -5,6 +5,8 @@ with defaults on first launch. Edit it by hand, through the **Mod Menu** screen 
 switch + per-feature on/off toggles; numeric values are file-only), or on a live server with
 `/fallow reload`. Values are **clamped on
 load** to the ranges below - out-of-range hand edits are silently corrected, never rejected.
+If the file has a JSON error it is kept aside as `fallow.json.broken` (so hand-tuned maps and
+tables survive the typo) and defaults are written in its place, with a log warning.
 
 - **Server-side.** The simulation runs on the server; the config lives with the server/world.
   In singleplayer the Mod Menu screen edits take effect immediately; on a dedicated server,
@@ -362,6 +364,9 @@ its season.
 
 **`types` defaults:** `minecraft:oak_leaves` and `minecraft:dark_oak_leaves` -> `minecraft:apple`,
 season `autumn`, chance `0.01` (vanilla's only tree fruit; the map is open for modded items).
+`chance` is further scaled by the biome growth multiplier and stalled by a heatwave, like every
+growth channel. An entry's `season` must be `spring`/`summer`/`autumn`/`winter`; anything else is
+nulled with a log warning and means every season, as does disabling seasons entirely.
 
 Two more `vegetation` knobs (alongside `biomeDensity`/`biomeGrowth`/`biomeSeasonality`):
 **`biomeSeasonPhase`** (id/tag -> 0-3) shifts which season a biome's growth peaks in - default

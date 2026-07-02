@@ -30,10 +30,12 @@ Fallow edits vanilla blocks over time, so it is opt-in: the top-level config `en
 off: `EcologyScheduler` and `TrailSystem` early-return their tick; `SeasonService` holds
 `SeasonalTemperature` at 0 (so the `BiomeTemperatureMixin` never nudges vanilla into snowing or
 freezing) and restores the vanilla clock rate; `SeasonEventService` and `WeatherService` stand
-down (no forced weather, no spell scaling); `PrecipitationBiomes` skips its biome edits; and no
-season payload is sent, so clients stay fully vanilla (no tint). Flip `enabled` true + `/fallow
-reload` to activate - except the `PrecipitationBiomes` layer, which is baked at registry load and
-needs a restart (its own section notes this).
+down (no forced weather, no spell scaling); `PrecipitationBiomes` skips its biome edits; and
+clients render fully vanilla - joiners get no season payload, and a mid-session disable
+broadcasts one disabled payload so already-connected clients drop the tint and temperature
+offset too. Flip `enabled` true + `/fallow reload` to activate - except the
+`PrecipitationBiomes` layer, which is baked at registry load and needs a restart (its own
+section notes this).
 
 Regardless of the switch, `notice/FirstJoinNotice` sends each player a one-time chat notice on
 first join that the mod alters blocks and is destructive, with the current on/off state and how to
@@ -325,14 +327,16 @@ shouldn't depend on biome fertility). The season is also **phase-shifted per bio
 (`vegetation.biomeSeasonPhase` via `BiomeTuning.seasonPhase`): a biome reads the curve at a
 shifted season index, so e.g. savanna (offset 3 = -1) peaks in its summer wet season instead of
 spring - and `SaplingSpreadTask` and `OvercrowdingTask` apply the same shift, so a biome's whole
-ecology (growth, thinning, sapling spread) stays on one calendar. **SAPLING, BUSH, LEAF_LITTER,
-and CROWDING are exceptions** to seasonal *scaling* - each runs its own seasonal term in-task:
-`SaplingSpreadTask` via `saplings.types[].phenology`, `VegetationSproutTask` via
+ecology (growth, thinning, sapling spread) stays on one calendar. **SAPLING, BUSH, FRUIT,
+LEAF_LITTER, and CROWDING are exceptions** to seasonal *scaling* - each runs its own seasonal
+term in-task: `SaplingSpreadTask` via `saplings.types[].phenology`, `VegetationSproutTask` via
 `vegetation.bushSeasons` (sweet berry -> autumn, firefly -> summer, generic bush -> spring),
-`LeafLitterTask` via an autumn-peaked `leafLitter.leafFallWeight` (shared with the client
-leaf-particle rate, below), and `OvercrowdingTask` via its per-season density target (so the cull
-rate stays flat - season isn't counted in both the target and the rate). An active **heatwave**
-multiplies growth channels by `SeasonEvents.growthMultiplier()`. The current season is read from a
+`FruitDropTask` via its per-type season gate, `LeafLitterTask` via an autumn-peaked
+`leafLitter.leafFallWeight` (shared with the client leaf-particle rate, below), and
+`OvercrowdingTask` via its per-season density target (so the cull rate stays flat - season isn't
+counted in both the target and the rate). An active **heatwave** multiplies every growth channel
+by `SeasonEvents.growthMultiplier()`, exempt or not - the stall is a transient event, not part
+of any per-species curve. The current season is read from a
 **per-tick cache** (`SeasonClock`, refreshed at `START_SERVER_TICK`) rather than a SavedData lookup
 per sampled candidate; `SeasonState` remains the authoritative source advanced by `SeasonService`. Flowers stay on the biome-modulated shared curve (the mod
 delegates flower *choice* to the biome bonemeal palette), but the *pick* is season-biased toward
@@ -500,7 +504,11 @@ stay white through summer at the default offsets (raise `summerTempOffset` for a
 - **Fruiting (`ecology/FruitDropTask`)** - in its configured season a natural tree drops a fruit
   `ItemEntity` on open ground under its canopy (oak/dark-oak -> apple in autumn by default). The
   tree is identified by a non-persistent leaf block overhead - same player-build immunity as the
-  litter/sapling heuristics. The `fruiting.types` map is open for modded fruit.
+  litter/sapling heuristics. The `fruiting.types` map is open for modded fruit. Each type's
+  `chance` is multiplied by the provider stack's `FRUIT` channel (biome growth + heatwave stall;
+  the shared seasonal curve is skipped because the per-type season gate *is* the curve). With
+  seasons disabled every type is in season; an unknown season string is nulled with a warning at
+  config load.
 - **Leaf fall** - a single autumn-peaked `leafLitter.leafFallWeight` drives two things so they
   match visually: the **ground litter** accumulation rate (`LeafLitterTask`, which is why
   LEAF_LITTER is season-exempt in the provider stack) and the **client falling-leaf particles**

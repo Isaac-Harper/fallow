@@ -63,9 +63,12 @@ jobs:
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
         run: |
+          # Use the pinned project id (slugs are not stable identifiers), and fail the job on a
+          # bad response instead of going green with the page unsynced.
+          MODRINTH_ID=$(sed -n 's/^mod.modrinth_id = "\(.*\)"$/\1/p' stonecutter.properties.toml)
           jq -Rs '{body: .}' README.md > /tmp/body.json
-          curl -sS -X PATCH \
+          curl -sS --fail-with-body -X PATCH \
             -H "Authorization: $MODRINTH_TOKEN" \
             -H "Content-Type: application/json" \
             --data @/tmp/body.json \
-            "https://api.modrinth.com/v2/project/fallow"
+            "https://api.modrinth.com/v2/project/$MODRINTH_ID"

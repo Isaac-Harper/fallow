@@ -19,6 +19,9 @@ public final class ConfigGrowthRates implements GrowthRateProvider {
             case SUGAR_CANE -> Fallow.CONFIG.shoreline.sugarCaneChance;
             case SEAGRASS -> Fallow.CONFIG.shoreline.seagrassChance;
             case BAMBOO -> Fallow.CONFIG.bamboo.chance;
+            // Fruiting has no single base chance: each fruiting.types entry carries its own,
+            // applied in the task. The stack contributes only the biome/heatwave scaling.
+            case FRUIT -> 1.0;
             case DIEBACK -> Fallow.CONFIG.dieback.chance;
             case LEAF_LITTER -> Fallow.CONFIG.leafLitter.chance;
             case CROWDING -> Fallow.CONFIG.overcrowding.chance;

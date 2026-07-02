@@ -2,7 +2,6 @@ package dev.isaac.fallow.client;
 
 import dev.isaac.fallow.Fallow;
 import dev.isaac.fallow.FallowConfig;
-import dev.isaac.fallow.season.SeasonService;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.StringWidget;
@@ -143,7 +142,10 @@ public final class ConfigScreen extends Screen {
     }
 
     private void commit() {
-        FallowConfig cfg = Fallow.CONFIG;
+        // Never mutate the live config in place (Fallow.CONFIG is replaced wholesale and the
+        // server thread reads it concurrently): apply the toggles to a fresh copy of the file,
+        // save, and route through the same reload path as /fallow reload.
+        FallowConfig cfg = FallowConfig.load();
         cfg.enabled = this.masterEnabled;
         cfg.vegetation.enabled = this.vegetationEnabled;
         cfg.dieback.enabled = this.diebackEnabled;
@@ -158,7 +160,10 @@ public final class ConfigScreen extends Screen {
         cfg.flowerWilt.enabled = this.flowerWiltEnabled;
         cfg.clamp();
         cfg.save();
-        SeasonService.invalidate(); // singleplayer: re-apply the clock rate next tick
+        Fallow.reload(this.minecraft.getSingleplayerServer()); // null outside singleplayer
+        // The tint parameters read the visuals config directly, so a toggle must recompute now
+        // rather than wait for the next season payload (up to an in-game day away).
+        FallowClientSeasons.refresh();
     }
 
     @Override

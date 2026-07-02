@@ -13,6 +13,7 @@ import dev.isaac.fallow.ecology.SaplingSpreadTask;
 import dev.isaac.fallow.ecology.ShorelineCreepTask;
 import dev.isaac.fallow.ecology.VegetationSproutTask;
 import dev.isaac.fallow.growth.BiomeGrowthRates;
+import dev.isaac.fallow.growth.BiomeTuning;
 import dev.isaac.fallow.growth.ConfigGrowthRates;
 import dev.isaac.fallow.growth.GrowthRateProvider;
 import dev.isaac.fallow.growth.SeasonalGrowthRates;
@@ -26,6 +27,7 @@ import dev.isaac.fallow.season.WeatherService;
 import dev.isaac.fallow.trail.TrailSystem;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +53,20 @@ public class Fallow implements ModInitializer {
     public static final GrowthRateProvider GROWTH_RATES =
         new BiomeGrowthRates(new SeasonalGrowthRates(new ConfigGrowthRates()));
 
+    /**
+     * The single config-update path: re-read the file, swap {@link #CONFIG} wholesale, and
+     * re-derive everything cached from it. Both {@code /fallow reload} and the config screen's
+     * Done button land here; anything a config change must refresh belongs in this method, not
+     * at its call sites. {@code server} may be null (config screen outside a world).
+     */
+    public static void reload(MinecraftServer server) {
+        CONFIG = FallowConfig.load();
+        SeasonService.invalidate();
+        if (server != null) {
+            BiomeTuning.rebuild(server.registryAccess()); // re-resolve per-biome tuning
+        }
+    }
+
     @Override
     public void onInitialize() {
         CONFIG = FallowConfig.load();
@@ -73,7 +89,7 @@ public class Fallow implements ModInitializer {
         EcologyScheduler.registerTask(new OvercrowdingTask(GROWTH_RATES));
         EcologyScheduler.registerTask(new FlowerWiltTask(GROWTH_RATES));
         EcologyScheduler.registerTask(new PrecipitationTask());
-        EcologyScheduler.registerTask(new FruitDropTask());
+        EcologyScheduler.registerTask(new FruitDropTask(GROWTH_RATES));
         TrailSystem.register();
         FallowCommands.register();
         FirstJoinNotice.register(); // one-time "this mod changes blocks" notice, shown even when disabled

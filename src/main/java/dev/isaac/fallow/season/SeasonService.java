@@ -96,8 +96,13 @@ public final class SeasonService {
         if (!cfg.enabled) {
             // Master switch off: keep the world fully vanilla - no seasonal temperature shift (so
             // vanilla never snows/freezes on our account) and restore the vanilla day length if we
-            // ever changed it.
+            // ever changed it. Already-connected clients must go vanilla too (drop the tint and
+            // their copy of the offset): the disabled payload below is deduped by lastSynced, so a
+            // mid-session disable broadcasts exactly once.
             SeasonalTemperature.set(0.0f);
+            SeasonState state = SeasonState.get(server);
+            sendIfChanged(server, new SeasonSyncPayload(
+                state.season().ordinal(), state.dayInSeason(), cfg.seasons.daysPerSeason, false, 0.0f));
             if (!Float.isNaN(appliedRate) && appliedRate != 1.0f) {
                 overworldClock(server).ifPresent(c -> server.clockManager().setRate(c, 1.0f));
                 appliedRate = 1.0f;
@@ -118,12 +123,7 @@ public final class SeasonService {
         // Drive the server-side seasonal temperature (snow/freeze logic reads it via the mixin);
         // the same value rides the payload so clients render matching rain/snow particles.
         SeasonalTemperature.set(sync.tempOffset());
-        if (!sync.equals(lastSynced)) {
-            lastSynced = sync;
-            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                ServerPlayNetworking.send(player, sync);
-            }
-        }
+        sendIfChanged(server, sync);
 
         float desired = cfg.seasons.enabled && cfg.dayNight.enabled
             ? DayCycle.rateFor(ticks, cfg.dayNight.dayPortion(state.season()))
@@ -145,6 +145,17 @@ public final class SeasonService {
             .map(clock -> DayCycle.dayOf(server.clockManager().getTotalTicks(clock)))
             .orElse(SeasonClock.day());
         SeasonClock.set(SeasonState.get(server).season(), day);
+    }
+
+    /** Broadcast the payload to every connected player, skipping if it matches the last send. */
+    private static void sendIfChanged(MinecraftServer server, SeasonSyncPayload sync) {
+        if (sync.equals(lastSynced)) {
+            return;
+        }
+        lastSynced = sync;
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            ServerPlayNetworking.send(player, sync);
+        }
     }
 
     private static SeasonSyncPayload currentSync(MinecraftServer server) {

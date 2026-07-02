@@ -10,6 +10,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -772,13 +773,30 @@ public final class FallowConfig {
                     loaded.clamp();
                     return loaded;
                 }
+                backupBroken(path); // Gson returns null for an empty/truncated file
             } catch (Exception e) {
                 Fallow.LOGGER.warn("Failed to read config, using defaults", e);
+                backupBroken(path);
             }
         }
         FallowConfig fresh = new FallowConfig();
         fresh.save(path);
         return fresh;
+    }
+
+    /**
+     * A hand-tuned config with one JSON typo must not be destroyed by the defaults rewrite below:
+     * keep the unreadable file next to the fresh one so the user's per-biome maps and tree tables
+     * survive the mistake.
+     */
+    private static void backupBroken(Path path) {
+        Path backup = path.resolveSibling(path.getFileName() + ".broken");
+        try {
+            Files.copy(path, backup, StandardCopyOption.REPLACE_EXISTING);
+            Fallow.LOGGER.warn("Kept the unreadable config at {}; writing defaults to {}", backup, path);
+        } catch (IOException e) {
+            Fallow.LOGGER.warn("Could not back up the unreadable config", e);
+        }
     }
 
     /** Persist to the standard config path (used by the in-game config screen). */
@@ -907,9 +925,16 @@ public final class FallowConfig {
         events.heatwaveTempBonus = clampTempOffset(events.heatwaveTempBonus);
         fruiting.scanHeight = clampInt(fruiting.scanHeight, 1, 32);
         if (fruiting.types != null) {
-            for (Fruiting.FruitType t : fruiting.types.values()) {
+            fruiting.types.forEach((leaf, t) -> {
                 t.chance = clampChance(t.chance);
-            }
+                // A typo'd season would silently skip the gate (byId -> null reads as "any
+                // season"); make that explicit and say so once, at load.
+                if (t.season != null && Season.byId(t.season) == null) {
+                    Fallow.LOGGER.warn("fruiting.types[{}].season \"{}\" is not a season "
+                        + "(spring/summer/autumn/winter); treating it as every season", leaf, t.season);
+                    t.season = null;
+                }
+            });
         }
         if (precipitation.snowDepth != null) {
             precipitation.snowDepth.replaceAll((k, v) -> Math.max(1.0, Math.min(8.0, v)));
