@@ -127,7 +127,8 @@ sapling by registry name, so modded trees work automatically.
 | `maxColumnHeight` | `24` | 2-64 | Max log-column height walked when validating a tree. |
 | `densityRadius` | `10` | 1-16 | Box radius for the per-species density count. |
 | `maxSaplingsNearby` | `3` | 0-64 | Fallback density cap for tree types **not** in `types` (modded). |
-| `types` | see below | per sapling id | Per-species `rate` (0-1), `radius` (1-`logSearchRadius`), `density` (0-256), and optional `phenology`. |
+| `clusterRadius` | `1` | 0-8 | How far a mega-species (dark/pale oak) seed may be nudged onto the cell that best advances a partial 2x2; 0 turns the nudge off. |
+| `types` | see below | per sapling id | Per-species `rate` (0-1), `radius` (1-`logSearchRadius`), `density` (0-256), optional `phenology`, and `twoByTwo` for mega-species. |
 
 **`types` defaults** - grounded in each species' real dispersal/regeneration ecology
 (`rate` = prolificacy, `radius` = dispersal distance, `density` = canopy closure; all

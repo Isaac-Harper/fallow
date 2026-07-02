@@ -820,6 +820,7 @@ public final class FallowConfig {
         saplings.maxColumnHeight = clampInt(saplings.maxColumnHeight, 2, 64);
         saplings.densityRadius = clampInt(saplings.densityRadius, 1, 16);
         saplings.maxSaplingsNearby = clampInt(saplings.maxSaplingsNearby, 0, 64);
+        saplings.clusterRadius = clampInt(saplings.clusterRadius, 0, 8);
         leafLitter.chance = clampChance(leafLitter.chance);
         leafLitter.podzolShare = clampChance(leafLitter.podzolShare);
         leafLitter.minCanopyLayers = clampInt(leafLitter.minCanopyLayers, 1, 16);

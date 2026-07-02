@@ -29,8 +29,11 @@ Fallow edits vanilla blocks over time, so it is opt-in: the top-level config `en
 `false`, and every system that writes blocks (or drives vanilla into writing them) checks it. When
 off: `EcologyScheduler` and `TrailSystem` early-return their tick; `SeasonService` holds
 `SeasonalTemperature` at 0 (so the `BiomeTemperatureMixin` never nudges vanilla into snowing or
-freezing) and restores the vanilla clock rate; and no season payload is sent, so clients stay
-fully vanilla (no tint). Flip `enabled` true + `/fallow reload` to activate.
+freezing) and restores the vanilla clock rate; `SeasonEventService` and `WeatherService` stand
+down (no forced weather, no spell scaling); `PrecipitationBiomes` skips its biome edits; and no
+season payload is sent, so clients stay fully vanilla (no tint). Flip `enabled` true + `/fallow
+reload` to activate - except the `PrecipitationBiomes` layer, which is baked at registry load and
+needs a restart (its own section notes this).
 
 Regardless of the switch, `notice/FirstJoinNotice` sends each player a one-time chat notice on
 first join that the mod alters blocks and is destructive, with the current on/off state and how to
@@ -487,7 +490,9 @@ stay white through summer at the default offsets (raise `summerTempOffset` for a
   didn't watch start.
 - **Seasonal events (`season/SeasonEventService` + `SeasonEvents`)** - rolls once per in-game day,
   biased by season: blizzard (winter), heatwave (summer), storm (spring/autumn). For a random
-  duration it forces the event's weather (`WeatherData`) and publishes transient modifiers through
+  duration it forces the event's weather (`WeatherData`), pinning the weather timers to the
+  event's own clock so the pre-event countdown (a clear spell can be 180000 ticks) can't survive
+  as the forced spell's duration, and publishes transient modifiers through
   the `SeasonEvents` volatile holder: a snow-accumulation multiplier (read by `PrecipitationTask`),
   a growth multiplier (read by `SeasonalGrowthRates`, growth channels only), and a temperature
   bonus (folded into the synced offset by `SeasonService`, so a heatwave warms/melts and the client
@@ -522,7 +527,11 @@ Two decay tasks give vegetation a yearly rhythm, both scaled by the season decay
   carpet thinned to 361 over a winter soak. A defensive UPPER-half guard (review finding) handles
   the abnormal case where the heightmap lands on a tall-grass top.
 - **`ecology/FlowerWiltTask`** (channel `FLOWER_WILT`): a sampled flower (small or tall;
-  tall flowers normalized to their LOWER half) has a chance to wilt away. The base rate is
+  tall flowers normalized to their LOWER half) has a chance to wilt away. The target set is
+  `#minecraft:small_flowers` plus the tall garden and bed flowers - deliberately **not**
+  `#minecraft:flowers`, which is the bee-attraction tag and includes mangrove propagules (what
+  `SaplingSpreadTask` seeds), cherry/flowering-azalea *leaf* blocks, chorus flowers, spore
+  blossoms, and cactus flowers; `VegetationSproutTask`'s density guard counts the same set. The base rate is
   tuned against the flower sprout rate so the **effective** spring sprout (0.004 x 1.5 =
   0.006) >= spring wilt (0.006 x 0.75 = 0.0045) - flowers net-accumulate in spring - while
   autumn/winter wilt (x1.5 / x3.0) far outpaces the season-suppressed sprout. The adversarial

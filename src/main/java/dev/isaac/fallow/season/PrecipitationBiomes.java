@@ -30,8 +30,10 @@ public final class PrecipitationBiomes {
     }
 
     public static void register() {
+        // Master switch included: like the rest of this decision it's evaluated once at init,
+        // so turning the mod on also needs a restart before biome precipitation applies.
         FallowConfig.Precipitation cfg = Fallow.CONFIG.precipitation;
-        if (!cfg.enabled || cfg.biomePrecip == null || cfg.biomePrecip.isEmpty()) {
+        if (!Fallow.CONFIG.enabled || !cfg.enabled || cfg.biomePrecip == null || cfg.biomePrecip.isEmpty()) {
             return;
         }
         BiomeModification mod =

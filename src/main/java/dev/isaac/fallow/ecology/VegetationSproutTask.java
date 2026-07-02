@@ -10,7 +10,6 @@ import dev.isaac.fallow.season.SeasonClock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.ChunkPos;
@@ -246,7 +245,7 @@ public final class VegetationSproutTask implements EcologyTask {
         int count = 0;
         for (BlockPos p : BlockPos.betweenClosed(pos.offset(-r, -2, -r), pos.offset(r, 2, r))) {
             BlockState state = level.getBlockState(p);
-            if (state.is(BlockTags.FLOWERS) || BUSHES.contains(state.getBlock())) {
+            if (FlowerWiltTask.isSeasonalFlower(state) || BUSHES.contains(state.getBlock())) {
                 if (++count >= cap) {
                     return true;
                 }
