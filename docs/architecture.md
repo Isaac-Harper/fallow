@@ -470,18 +470,21 @@ Two layers make precipitation seasonal and per-biome without a server-side weath
 
 Together: a temperate forest rains in summer and snows (real flakes, per-biome drift depth, frozen
 ponds) in winter, then thaws in spring; savanna gains a warm rainy season; deserts stay bone-dry.
-The remaining limit is rain *frequency*: Minecraft has a single global weather timeline, so true
-per-biome rain *rates* would need localized weather (custom sim + render - out of scope); a
-seasonal *global* frequency mood (wetter summers, via `WeatherData`) is the deferred middle
-ground. Snowy biomes also stay white through summer at the default offsets (raise
-`summerTempOffset` for a thaw).
+The remaining limit is *per-biome* rain frequency: Minecraft has a single global weather timeline,
+so true per-biome rain *rates* would need localized weather (custom sim + render - out of scope).
+The seasonal *global* frequency mood is `season/WeatherService` (next section). Snowy biomes also
+stay white through summer at the default offsets (raise `summerTempOffset` for a thaw).
 
 ## Seasonal weather, events, fruiting & leaf fall
 
-- **Weather frequency (`season/WeatherService`)** - at each weather transition it scales the
-  freshly-rolled duration by the season's `precipitation.*Rainfall` weight (wetter season -> longer
-  rain, shorter clear) through `WeatherData` public setters. Global - one weather timeline - so it
-  cooperates with vanilla's timers and `/weather` rather than fighting them.
+- **Weather frequency (`season/WeatherService`)** - watches the overworld's single rain countdown
+  and, when vanilla rolls a fresh spell (the countdown jumps up to a full duration), scales that
+  roll by the season's `precipitation.*Rainfall` weight (wetter season -> longer rain, shorter
+  clear) through `WeatherData` public setters. Global - one weather timeline. Only the fresh roll
+  is touched, so vanilla's own ticking does the rest; a `/weather` duration that raises the
+  countdown is indistinguishable from a roll and is scaled the same way. While a season event owns
+  the weather the service stands down and re-primes afterwards, so it never rescales a spell it
+  didn't watch start.
 - **Seasonal events (`season/SeasonEventService` + `SeasonEvents`)** - rolls once per in-game day,
   biased by season: blizzard (winter), heatwave (summer), storm (spring/autumn). For a random
   duration it forces the event's weather (`WeatherData`) and publishes transient modifiers through
@@ -533,8 +536,6 @@ given no design weight. **Mushroom spread excluded**: vanilla already does it.
 
 ## Future work (explicitly out of v1)
 
-- Seasonal global weather *frequency* (wetter summers) - would drive the 26.1 `WeatherData`;
-  precipitation *type* + accumulation + freeze/thaw are already seasonal (see Seasonal precipitation).
 - Per-biome season *phase* offset (a savanna whose growth peaks in its summer wet season, vs
   spring-peaked temperate) - the amplitude scalar `biomeSeasonality` ships; a phase shift is the
   next knob, and `GrowthRateProvider` already receives the level for it.
