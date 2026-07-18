@@ -33,6 +33,14 @@ loom {
             sourceSet(sourceSets["main"])
             sourceSet(sourceSets["client"])
         }
+        // Dev-only companion mod: the test source set carries the @GameTest classes and its own
+        // fabric.mod.json (src/test/resources). Registering it here gives the runGametest server a
+        // distinct mod whose fabric-gametest entrypoint is loaded from test classes. The published
+        // jar never sees it (different source set), so runServer no longer crashes on a missing
+        // gametest class.
+        create("fallow_gametest") {
+            sourceSet(sourceSets["test"])
+        }
     }
 
     runs {

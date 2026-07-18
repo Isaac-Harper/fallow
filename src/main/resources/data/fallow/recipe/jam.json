@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#fallow:jam_fruits",
+    "#fallow:jam_fruits",
+    "minecraft:sugar",
+    "minecraft:glass_bottle"
+  ],
+  "result": {
+    "id": "fallow:jam",
+    "count": 1
+  }
+}

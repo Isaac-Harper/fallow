@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "fallow:cucumber",
+    "fallow:cucumber",
+    "minecraft:glass_bottle"
+  ],
+  "result": {
+    "id": "fallow:pickles",
+    "count": 1
+  }
+}

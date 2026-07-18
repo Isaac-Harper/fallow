@@ -1,7 +1,7 @@
 # Fallow - crops (design proposal)
 
-Status: **Phases C1, C2, and the C3 extended roster implemented** (2026-07-18). The full crop
-roster is shipped and live behind `crops.enabled` (default `false`):
+Status: **Phases C1, C2, C3 extended roster, and C3 preservation layer implemented** (2026-07-18).
+The full crop roster and preservation layer are shipped and live behind `crops.enabled` (default `false`):
 
 - **C1:** Turnip, cabbage, onion, cherry, strawberry, peas; the trellis block; `ForageSpreadTask`
   with wild onion and strawberry bush; season-gated farmland growth with winter kill; legume
@@ -12,9 +12,14 @@ roster is shipped and live behind `crops.enabled` (default `false`):
   on the trellis; raspberry and blackberry bushes; squash (stem crop); plum (fruiting.types);
   eleven wild forage plants (wild rice, wild grape vine, wild hops, chanterelle, mint, sage,
   thyme, ramsons, sorrel, plus existing wild onion and strawberry bush).
+- **C3 preservation layer:** Jam (fruit group, crafted with `fallow:jam_fruits` + sugar +
+  glass bottle), pickles (vegetable group, crafted with cucumbers + glass bottle), raisins
+  (fruit group, grapes dried by furnace/smoker/campfire), and dried chanterelles (fungi group,
+  chanterelles dried by furnace/smoker/campfire). Jar items (jam, pickles) return a glass
+  bottle on eating via `usingConvertsTo`; dried items eat fast like dried kelp.
 
-Still future: the preservation layer (pickled cucumber, jam, raisins, dried mushrooms) and the
-diet mechanic that consumes the `fallow:diet/*` tags - now scoped in [diet.md](diet.md).
+The diet mechanic that consumes the `fallow:diet/*` tags is also implemented ([diet.md](diet.md)).
+Still future: the diet micro-flavor phase and masting (bumper seed years for oaks).
 
 The document below is the design record as written; see [features.md](features.md) for the
 plain-language tour and [configuration.md](configuration.md) for the full config reference.
@@ -314,18 +319,24 @@ soil sim a reason to care about what the player plants. Config-gated (`crops.leg
 
 ### 7.3 Winter scarcity and preservation
 
-Because winter nearly stops growth, fresh variety collapses in winter by design. That is the hook for
-a future **diet** feature, and it motivates a light **preservation** layer:
+Implemented 2026-07-18. Because winter nearly stops growth, fresh variety collapses in winter by design.
+That is the hook for the **diet** feature, and the **preservation** layer is what lets players carry
+diet variety through it:
 
 - Storables (winter squash, dried grain, onions, garlic) keep their diet value through winter
   as-is.
-- Preserved goods (pickled cucumber, jam from berries/cherries, raisins from grapes, dried
-  mushrooms) are crafted in warm seasons and consumed in winter to keep diet variety up.
+- Preserved goods crafted in warm seasons and consumed in winter:
+  - **Jam** (fruit group) - two `fallow:jam_fruits` items (strawberries, cherries, raspberries,
+    blackberries, plum, grapes, sweet berries, apple, or glow berries) + sugar + glass bottle.
+    Eating the jar returns the glass bottle via `usingConvertsTo`; uses the drink animation;
+    stacks to 16.
+  - **Pickles** (vegetable group) - two cucumbers + glass bottle. Same jar-return mechanism.
+  - **Raisins** (fruit group) - grapes dried in a furnace, smoker, or over a campfire.
+    Fast-eat (0.8 s), like dried kelp.
+  - **Dried chanterelles** (fungi group) - chanterelles dried in a furnace, smoker, or over a
+    campfire. Same fast-eat.
 - This turns autumn into a "put up food for winter" phase, which is exactly the agricultural rhythm
-  Fallow's seasons imply.
-
-Preservation is out of scope for the crop layer itself but the crops are chosen so it drops in
-cleanly later.
+  Fallow's seasons imply. The `fallow:jam_fruits` tag is open for datapack extension.
 
 ### 7.4 Winter kill and seed saving
 
@@ -508,7 +519,8 @@ The open questions this proposal shipped with, resolved 2026-07-18:
 - **Phase C3 roster (implemented):** Leek, barley, rye, oat, garlic, radish, parsnip, pepper,
   flax; grapes and hops on the trellis; raspberry and blackberry bushes; squash stem crop; plum
   via `fruiting.types`; and eleven wild forage plants spread by `ForageSpreadTask`.
-- **C3 preservation layer (future):** Pickled cucumber, jam from berries/cherries, raisins from
-  grapes, dried mushrooms - crafted in warm seasons, consumed in winter for diet variety.
+- **C3 preservation layer (implemented 2026-07-18):** Jam (crafted, jar-return via
+  `usingConvertsTo`), pickles (crafted, jar-return), raisins (furnace/smoker/campfire drying),
+  and dried chanterelles (furnace/smoker/campfire drying). All four keep their source diet group.
 - **Later, separate:** The diet mechanic itself, consuming the `fallow:diet/*` tags this layer
-  ships.
+  ships. Per-group micro-flavor bonuses and masting are also future.

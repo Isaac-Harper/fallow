@@ -13,7 +13,9 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.Consumable;
 
 /**
  * The mod's items. Includes the season_clock (Phase 4) and the full crop-layer item roster
@@ -111,6 +113,39 @@ public final class FallowItems {
     public static final Item SORREL = register("sorrel", Item::new,
         new Item.Properties().food(food(1, 0.2f)));
 
+    // Preserved foods (Phase 7.3).
+    /**
+     * Jam: eating returns a glass bottle, like honey_bottle. Uses the DRINK animation; the bottle
+     * comes back via {@link Item.Properties#usingConvertsTo}.
+     */
+    public static final Item JAM = register("jam", Item::new,
+        new Item.Properties()
+            .food(food(4, 0.6f), Consumable.builder()
+                .animation(ItemUseAnimation.DRINK)
+                .build())
+            .usingConvertsTo(Items.GLASS_BOTTLE)
+            .stacksTo(16));
+    /**
+     * Pickles: eating returns a glass bottle. Same bottle-return mechanism as jam.
+     */
+    public static final Item PICKLES = register("pickles", Item::new,
+        new Item.Properties()
+            .food(food(3, 0.6f), Consumable.builder()
+                .animation(ItemUseAnimation.DRINK)
+                .build())
+            .usingConvertsTo(Items.GLASS_BOTTLE)
+            .stacksTo(16));
+    /** Raisins: fast-eat like dried kelp (0.8 s). */
+    public static final Item RAISINS = register("raisins", Item::new,
+        new Item.Properties().food(food(3, 0.6f), Consumable.builder()
+            .consumeSeconds(0.8f)
+            .build()));
+    /** Dried chanterelles: fast-eat like dried kelp (0.8 s). */
+    public static final Item DRIED_CHANTERELLES = register("dried_chanterelles", Item::new,
+        new Item.Properties().food(food(3, 0.6f), Consumable.builder()
+            .consumeSeconds(0.8f)
+            .build()));
+
     // Non-food harvest items.
     public static final Item BARLEY = register("barley", Item::new, new Item.Properties());
     public static final Item RYE = register("rye", Item::new, new Item.Properties());
@@ -201,6 +236,10 @@ public final class FallowItems {
             output.accept(THYME);
             output.accept(RAMSONS);
             output.accept(SORREL);
+            output.accept(JAM);
+            output.accept(PICKLES);
+            output.accept(RAISINS);
+            output.accept(DRIED_CHANTERELLES);
         });
 
         // Natural Blocks - seeds, harvest goods, squash, and trellis near wheat seeds.

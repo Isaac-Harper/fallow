@@ -1,10 +1,9 @@
 # Fallow - diet (design proposal)
 
-Status: **D1 implemented** (2026-07-18), live behind `diet.enabled` (default `false`). D2
-(preservation) and later phases remain design. This document scopes the diet mechanic that the crop layer's
-`fallow:diet/*` item tags were shipped to feed ([crops.md](crops.md) section 7.5). Nothing here
-ships until it is implemented behind its own config module (`diet.enabled`, default `false`,
-under the master `enabled` switch).
+Status: **D1 and D2 implemented** (2026-07-18), live behind `diet.enabled` (default `false`)
+for D1 and `crops.enabled` for the D2 preservation items. Later phases remain design. This document
+is the design record for the diet mechanic that the crop layer's `fallow:diet/*` item tags feed
+([crops.md](crops.md) section 7.5).
 
 The one-sentence pitch: **eating a varied diet earns a small, visible bonus; eating one thing
 does not hurt you.** Fallow rewards engaging with the seasonal food the crop layer creates; it
@@ -23,7 +22,7 @@ never punishes ignoring it. A player who eats nothing but bread plays exactly va
 - **Seasons supply the drama.** In summer and autumn, variety is easy - fresh food everywhere.
   In winter, fresh variety collapses by design (winter kill, dormant forage), so keeping the
   bonus through winter requires the agricultural rhythm the crop layer teaches: store the
-  storables, save the seeds, and later (preservation phase) put up preserves.
+  storables, save the seeds, and put up preserves (jam, pickles, raisins, dried chanterelles).
 - **Fully removable.** Unlike crop blocks, the diet layer is pure per-player state and
   effects. Removing the mod or disabling the module leaves a plain vanilla player.
 
@@ -90,9 +89,9 @@ are missing, and the current tier. On first covering a new group, a one-line act
   tuning season-length agnostic; the time cap keeps the bonus describing a *current* diet
   instead of one frozen by not eating.
 - **Carrot, not stick - confirmed.** Monotony is exactly vanilla; there is no penalty tier.
-- **Preserved food identity.** When the preservation phase lands (pickles, jam, raisins,
-  dried mushrooms), preserved items keep their source group tags so winter variety is
-  reachable - that is the point of preserving. No separate "preserved" group.
+- **Preserved food identity.** Preserved items (pickles, jam, raisins, dried chanterelles)
+  keep their source group tags so winter variety is reachable through stores. No separate
+  "preserved" group.
 - **Third-party overlap.** As with crops: no detection of other diet mods; ship our own,
   tags keep the data composable.
 
@@ -100,8 +99,11 @@ are missing, and the current tier. On first covering a new group, a one-line act
 
 ## 5. Phasing
 
-- **D1:** eat detection + window state + score + absorption tiers + `/fallow diet` + config.
-- **D2:** the preservation layer from crops.md section 7.3 (pickling, drying, jam), designed
-  in its own right but motivated here - winter variety through stores.
+- **D1 (implemented 2026-07-18):** eat detection + window state + score + absorption tiers +
+  `/fallow diet` + config.
+- **D2 (implemented 2026-07-18):** the preservation layer from crops.md section 7.3 - jam
+  (crafted, jar return), pickles (crafted, jar return), raisins (furnace/smoker/campfire),
+  and dried chanterelles (furnace/smoker/campfire). All four keep their source diet group so
+  winter variety is reachable through stores.
 - **Later:** per-group micro-flavor (a fungi-heavy window slightly speeds mushroom spread
   near the player, etc.) only if D1 proves fun; explicitly out of scope for now.

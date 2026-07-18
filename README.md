@@ -94,8 +94,10 @@ by biome:
   stalk, 4 trellis climbers (peas, cucumber, grapes, hops), 3 berry bushes, squash spreading from
   a stem like pumpkin, 2 tree fruits (cherry and plum) dropping beneath natural canopy in season,
   and 11 wild forage plants spreading via the ecology scheduler. 15 seeds drop from breaking
-  grass. Note: planted crop blocks are real new blocks and do not uninstall cleanly if the mod is
-  removed - see the warning in [docs/features.md](docs/features.md).
+  grass. Preserved foods for winter: jam and pickles (craft with a glass bottle, bottle returns
+  on eating), raisins and dried chanterelles (dry in a furnace, smoker, or over a campfire). Note:
+  planted crop blocks are real new blocks and do not uninstall cleanly if the mod is removed - see
+  the warning in [docs/features.md](docs/features.md).
 - **Diet** (opt-in, `diet.enabled`, off by default) - eating across the six food groups (grain,
   vegetable, fruit, protein, fungi, sugar & oil) earns refreshed Absorption hearts: two at four
   or more groups, four at all six. Monotony is exactly vanilla, never a penalty. Uses a rolling

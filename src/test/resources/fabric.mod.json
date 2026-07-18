@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "fallow_gametest",
+  "version": "1.0.0",
+  "name": "Fallow GameTests",
+  "description": "Dev-only companion mod that registers Fallow's in-world GameTests. Never shipped: it lives in the test source set and is excluded from the published jar.",
+  "authors": [
+    "Isaac Harper"
+  ],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "dev.isaac.fallow.gametest.CropGameTests",
+      "dev.isaac.fallow.gametest.DietGameTests"
+    ]
+  },
+  "depends": {
+    "fallow": "*"
+  }
+}

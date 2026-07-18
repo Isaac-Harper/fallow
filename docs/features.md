@@ -222,6 +222,19 @@ placed, and the ecology sim stays exactly as it is. With it on:
   `/fungi`, `/sugar_oil`) are shipped with their current vanilla and Fallow-crop members. They
   feed the diet mechanic described below.
 
+- **Preserving food** - autumn harvests can be put up for winter in four ways:
+  - **Jam** (fruit group) - craft two fruit from `fallow:jam_fruits` (strawberries, cherries,
+    raspberries, blackberries, plum, grapes, sweet berries, apple, or glow berries) with sugar
+    and a glass bottle. Eating returns the bottle, like honey.
+  - **Pickles** (vegetable group) - craft two cucumbers with a glass bottle. Eating returns
+    the bottle.
+  - **Raisins** (fruit group) - dry grapes in a furnace, smoker, or over a campfire.
+  - **Dried chanterelles** (fungi group) - dry chanterelles in a furnace, smoker, or over a
+    campfire.
+  - Jam and pickles stack to 16 and use the drink animation; raisins and dried chanterelles
+    are fast-eat like dried kelp. Preserved food keeps its diet group, so autumn preserving
+    carries diet variety through winter.
+
 **Uninstall warning.** Unlike everything else in Fallow, placed crop blocks are real new blocks
 (`fallow:turnip_crop`, `fallow:pea_crop`, etc.). If the mod is removed after crops have been
 planted, those blocks become unknown blocks in the world - they do not vanish cleanly. Ecology
@@ -328,7 +341,7 @@ is untouched either way.
 - **Live reload** - apply most setting changes on a running server without a restart.
 - **Everything is toggleable** - every system (growth, dieback, trees, bushes, trails, leaf
   litter, shorelines, seasons, day/night, precipitation, visuals, crops, diet) can be turned on
-  or off on its own.
+  or off on its own. Crops and diet have their own toggles on the Mod Menu config screen.
 - **Everything is tunable** - rates, limits, distances, per-biome behavior, season length, and
   per-season strength are all adjustable.
 - **Performance-bounded** - the whole simulation runs within a strict per-tick budget, so it

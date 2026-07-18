@@ -710,7 +710,19 @@ missing groups, tier label, and meal count.
 command output reaches the player over normal chat packets; no dedicated S2C payload is
 needed. Absorption is a standard potion effect and syncs via vanilla's effect-update packet.
 
+## Preservation (D2)
+
+The preservation layer adds four items with no new mechanics: all work is pure items, recipes, and
+tags. Jam and pickles are crafted shapeless recipes whose result carries `usingConvertsTo(Items.GLASS_BOTTLE)`,
+the same `Consumable` + property that honey bottles use to return the bottle on eating; both use
+the `DRINK` animation and stack to 16. Raisins and dried chanterelles are standard cooking recipes
+(`smelting`, `smoking`, and `campfire_cooking` variants) and use a fast 0.8-second `consumeSeconds`
+on their `Consumable`. Diet group membership is declared purely through item tags: jam and raisins
+join `fallow:diet/fruit`; pickles join `fallow:diet/vegetable`; dried chanterelles join
+`fallow:diet/fungi`. The `fallow:jam_fruits` tag lists all valid jam inputs and is open for
+datapack extension.
+
 ## Future work (explicitly out of v1)
 
 - Snowy-biome summer thaw tuning; masting (irregular bumper seed years for oaks/pale_oak) - noted.
-- Crops: preservation layer (pickled cucumber, jam, raisins, dried mushrooms) - D2, see docs/diet.md for phasing.
+- Diet: per-group micro-flavor bonuses - later, see docs/diet.md for phasing.
