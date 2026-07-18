@@ -137,51 +137,86 @@ The crop layer is a second opt-in on top of the master switch: set `crops.enable
 `config/fallow.json` (default `false`). With it off no wild plants appear, no crop blocks are
 placed, and the ecology sim stays exactly as it is. With it on:
 
-- **Tier 1 roster** - six plants, each tied to a season:
-  - **Turnip** (autumn) - planted from turnip seeds on farmland; cold-hardy so it keeps trickling
-    through winter at a reduced rate instead of dying.
-  - **Cabbage** (spring and autumn, stalls in summer heat and winter) - planted from cabbage seeds.
-  - **Onion** (spring-planted, autumn harvest) - carrot-style: the onion food item itself is the
-    planter; right-clicking farmland with an onion plants the crop, and the mature plant drops
-    more onions.
-  - **Cherry** (spring) - no new growth block at all; the existing fruiting system that drops
-    apples under oak canopy in autumn already handles it. One new entry in `fruiting.types`
-    (`minecraft:cherry_leaves` -> `fallow:cherries`, spring) makes cherry grove trees drop
-    cherries beneath their canopy in spring, exactly the way oaks drop apples in autumn.
-  - **Strawberry** (spring) - a berry-bush-style plant; right-click to harvest ripe berries, no
-    contact thorns. The strawberry item itself plants the bush (same idiom as sweet berries).
-  - **Peas** (spring) - the most mechanically distinct crop; see Trellis and Nitrogen fixing below.
+- **Farmland crops (fourteen)** - planted from seeds on farmland, each tied to a seasonal window:
+  - **Turnip** (autumn, winter trickle - weight 0.25) and **leek** (autumn, cold-hardier trickle -
+    weight 0.35) are the two crops that keep going through winter at a reduced rate instead of dying.
+  - **Cabbage** (spring and autumn, stalls in summer heat and winter).
+  - **Onion** (spring/autumn) - carrot-style: the onion food item is the planter.
+  - **Garlic** and **parsnip** (autumn, parsnip trickles at 0.25 in winter).
+  - **Radish** (spring and autumn fast root).
+  - **Grains - barley, rye, and oats** (cool season). Barley and rye carry a winter trickle weight
+    (0.15 and 0.3 respectively); oat zeros out in winter.
+  - **Pepper** (summer, warm-season nightshade).
+  - **Flax** (spring/summer fiber crop).
+  - **Tomato** (summer).
+  - **Rice** (summer) - a paddy crop: it only grows when water sits within `crops.paddy.range`
+    blocks (default 4, range 0-8) of the farmland. Grow on flooded paddies; the water check
+    stalls growth without killing the plant.
 
-- **How seeds are obtained** - turnip seeds, cabbage seeds, and pea seeds drop occasionally from
-  breaking short or tall grass (gated by `crops.enabled`, default 5 % chance per break).
-  Wild onions appear on their own in forests via the forage spread engine (see below) and yield
-  seeds when broken. Strawberry bushes also appear wild in meadows, plains, and forests.
+- **Double-height crop** - **corn** grows two blocks tall (pitcher-crop style): the lower half
+  drives growth and the upper half appears at age 2. Breaking either half clears both.
+
+- **Trellis climbers (four)** - planted on a crafted trellis block (four sticks in an X pattern,
+  yields two), placed on dirt-family ground or farmland. Right-clicking the trellis with seeds
+  starts the vine at age 0; right-clicking the ripe vine (age 3) harvests the crop and resets to
+  age 1, so the trellis persists season to season.
+  - **Peas** (spring) - the legume; see Nitrogen fixing below.
+  - **Cucumber** (summer) - preservation feedstock; pickles into a winter storable.
+  - **Grapes** (summer/autumn) - fruit and brewing feedstock.
+  - **Hops** (summer/autumn) - brewing companion to barley.
+  - When winter-kill fires on a climber, it reverts to a bare trellis rather than a dead husk,
+    so the structure stays in place.
+
+- **Berry bushes (three)** - sweet-berry idiom: right-click to harvest ripe berries (age 2+), no
+  contact thorns. The berry item itself plants the bush.
+  - **Strawberry** (spring) - appears wild in meadows, plains, and forests.
+  - **Raspberry** (summer peak) and **blackberry** (summer) - spread via the forage engine.
+  - Bushes stall in winter but do not die from winter-kill.
+
+- **Squash** - a stem crop in the pumpkin/melon pattern. The stem grows on farmland and fruits out
+  onto adjacent ground. Reuses vanilla's pumpkin support tags; the season gate is applied by
+  overriding the stem's `randomTick`, exactly like the other crops.
+
+- **Tree fruits (two)** - no new growth block; the existing `FruitDropTask` drops these beneath
+  natural canopy in season:
+  - **Cherry** (spring) - drops from `minecraft:cherry_leaves`.
+  - **Plum** (autumn) - drops from `minecraft:flowering_azalea_leaves`.
+
+- **Forage layer** - eleven wild plants spread via the ecology scheduler (`crops.wild.homes`).
+  Three are crop bootstraps (breaking them yields seeds to start the farmland crop):
+  - **Wild rice** (swamp, mangrove swamp, rivers) - the only way to obtain rice seeds.
+  - **Wild grape vine** (savanna, meadow, sunflower plains).
+  - **Wild hops** (forests, rivers).
+  - The rest are gathered wild plants:
+  - **Wild onion** (forest) - the oldest forage entry; yields onion seeds.
+  - **Strawberry bush** also spreads wild in meadows, plains, and forests (see Berry bushes above).
+  - **Ramsons** (forest) - wild garlic; occasionally yields a garlic item on harvest.
+  - **Chanterelle** (forests, taiga) - fungi, diet group fungi.
+  - **Four herbs** spread in their biome homes: mint (river, meadow, swamp), sage (savanna, plains),
+    thyme (plains, savanna), sorrel (plains, meadow, forest).
+
+- **How seeds are obtained** - fifteen crop seeds drop from breaking short or tall grass when the
+  crop layer is on (5 % chance per break, equal weight; config: `crops.seedDropChance`). Rice is
+  deliberately excluded from the grass pool: it is found only as wild rice in wetland biomes.
 
 - **Season-gated growth** - crops grow on the vanilla random tick but each has its own seasonal
   weight. A crop planted out of season stalls instead of growing; all the seasonal tuning lives
-  in the `crops.cropSeasons` config map.
+  in `crops.cropSeasons`.
 
-- **Winter kill** - when winter arrives, any standing crop whose seasonal weight drops to zero
-  withers into a dead, unharvestable `fallow:withered_crop` block on its next random tick. Saving
-  seed in a chest before the season turns is the intended counter. Turnip is the one crop that
-  keeps going (weight 0.25 in winter, so it trickles). Strawberry bushes are the other exception:
-  they stall in winter but do not die. Pea vines die back to the bare trellis rather than a
-  withered husk. Toggle with `crops.winterKill` (default `true`).
-
-- **Trellis** - a crafted lattice block (four sticks in an X pattern, yields two), placed on
-  dirt-family ground or farmland. Right-clicking it with pea seeds plants the pea vine at age 0.
-  When winter-kill fires, the vine reverts to a bare trellis rather than a dead husk, so the
-  structure stays in place.
+- **Winter kill** - when winter arrives, any standing crop whose seasonal weight is zero withers
+  into a dead, unharvestable `fallow:withered_crop` block on its next random tick. Saving seed in
+  a chest before the season turns is the intended counter. Turnip, leek, barley, rye, garlic, and
+  parsnip carry non-zero winter weights so they trickle instead of dying. Bushes stall rather than
+  die. Trellis climbers revert to a bare trellis. Toggle with `crops.winterKill` (default `true`).
 
 - **Pea nitrogen fixing** - when a pea vine reaches maturity or is harvested, the soil around it
   improves: one coarse dirt or rooted dirt block within `crops.legumes.fixRadius` (default 1
   block) converts back to plain dirt. Toggle with `crops.legumes.fixNitrogen` (default `true`).
 
-- **Wild forage** - the `ForageSpreadTask` places wild plants via the ecology scheduler: wild
-  onions appear in forests, strawberry bushes in meadows, plains, and forests. Wild spread rides
-  the shared seasonal curve (slowing in winter with the rest of the ecosystem), unlike
-  player-planted crops which use their own per-crop weights. Biome homes are config-overridable
-  via `crops.wild.homes`.
+- **Wild forage spread** - the `ForageSpreadTask` places wild plants in biome-appropriate
+  locations via the ecology scheduler. Wild spread follows the shared seasonal curve (slowing in
+  winter with the rest of the ecosystem), unlike player-planted crops which use per-crop weights.
+  Biome homes are config-overridable via `crops.wild.homes`.
 
 - **Diet item tags** - six tags (`fallow:diet/grain`, `/vegetable`, `/fruit`, `/protein`,
   `/fungi`, `/sugar_oil`) are shipped with their current vanilla and Fallow-crop members. They

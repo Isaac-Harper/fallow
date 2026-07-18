@@ -88,13 +88,13 @@ by biome:
 - **Season Clock** (item) - a copper-and-redstone clock that shows the current season instead of
   the time of day: four pips at the compass points with a redstone hand that sweeps round to the
   active season. Crafted like a clock but with copper.
-- **Crops & forage** (opt-in, `crops.enabled`, off by default) - a Tier 1 roster of six
-  season-native plants: turnip (autumn, cold-hardy), cabbage (spring/autumn), onion (spring),
-  cherry (spring fruit drops beneath the canopy, no new growth block), strawberry (spring bush,
-  right-click harvest), and peas (spring, trellis climber with nitrogen-fixing soil enrichment).
-  Wild onions and strawberry bushes appear on their own via the ecology scheduler. Seeds drop
-  from breaking grass. Note: planted crop blocks are real new blocks and do not uninstall cleanly
-  if the mod is removed - see the warning in [docs/features.md](docs/features.md).
+- **Crops & forage** (opt-in, `crops.enabled`, off by default) - 14 farmland crops (including a
+  rice paddy mechanic and cold-hardy winter tricklers leek and turnip), corn as a double-height
+  stalk, 4 trellis climbers (peas, cucumber, grapes, hops), 3 berry bushes, squash spreading from
+  a stem like pumpkin, 2 tree fruits (cherry and plum) dropping beneath natural canopy in season,
+  and 11 wild forage plants spreading via the ecology scheduler. 15 seeds drop from breaking
+  grass. Note: planted crop blocks are real new blocks and do not uninstall cleanly if the mod is
+  removed - see the warning in [docs/features.md](docs/features.md).
 
 ## Commands
 

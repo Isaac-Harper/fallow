@@ -47,6 +47,17 @@ class CropsConfigTest {
     }
 
     @Test
+    void phaseC2WinterHardinessDefaults() {
+        Crops crops = new FallowConfig().crops;
+        // Leek is the hardiest winter crop of the batch (0.35 trickle).
+        assertEquals(0.35, crops.cropSeasonWeight("fallow:leek_crop", Season.WINTER), EPS);
+        // Rye keeps a lighter winter trickle (0.3).
+        assertEquals(0.3, crops.cropSeasonWeight("fallow:rye_crop", Season.WINTER), EPS);
+        // Oat is fully dormant in winter (0.0).
+        assertEquals(0.0, crops.cropSeasonWeight("fallow:oat_crop", Season.WINTER), EPS);
+    }
+
+    @Test
     void unknownBlockDefaultsToOneForEverySeasonWeights() {
         Crops crops = new FallowConfig().crops;
         // Undocumented / modded crops fall through to the 1.0 default - grow year-round.
@@ -162,6 +173,19 @@ class CropsConfigTest {
         assertEquals(0.004, cfg.crops.wild.forageChance, EPS);
         assertTrue(cfg.crops.legumes.fixNitrogen);
         assertEquals(1, cfg.crops.legumes.fixRadius);
+        assertEquals(4, cfg.crops.paddy.range);
+    }
+
+    @Test
+    void paddyRangeClamps0To8() {
+        FallowConfig cfg = new FallowConfig();
+        cfg.crops.paddy.range = -3;
+        cfg.clamp();
+        assertEquals(0, cfg.crops.paddy.range);
+
+        cfg.crops.paddy.range = 99;
+        cfg.clamp();
+        assertEquals(8, cfg.crops.paddy.range);
     }
 
     // -- ForageSpreadTask biome-eligibility helper ------------------------

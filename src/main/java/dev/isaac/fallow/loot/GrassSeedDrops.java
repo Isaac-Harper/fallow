@@ -16,7 +16,8 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
  * Adds one extra loot pool to the {@code minecraft:blocks/short_grass} and
  * {@code minecraft:blocks/tall_grass} loot tables: when the crop layer is active
  * ({@link CropsEnabledCondition}) and a random chance passes (config's seedDropChance),
- * drop one of turnip seeds, cabbage seeds, or pea seeds at equal weight.
+ * drop one of the crop seeds at equal weight. Rice is deliberately excluded (it comes from
+ * wild_rice only).
  *
  * <p>The {@code seedDropChance} constant is read from the config at the time this listener fires
  * (during loot-table rebuild, which happens at server start or {@code /reload}).
@@ -58,6 +59,18 @@ public final class GrassSeedDrops {
             .when(LootItemRandomChanceCondition.randomChance(chance))
             .add(LootItem.lootTableItem(FallowItems.TURNIP_SEEDS))
             .add(LootItem.lootTableItem(FallowItems.CABBAGE_SEEDS))
-            .add(LootItem.lootTableItem(FallowItems.PEA_SEEDS));
+            .add(LootItem.lootTableItem(FallowItems.PEA_SEEDS))
+            .add(LootItem.lootTableItem(FallowItems.BARLEY_SEEDS))
+            .add(LootItem.lootTableItem(FallowItems.RYE_SEEDS))
+            .add(LootItem.lootTableItem(FallowItems.OAT_SEEDS))
+            .add(LootItem.lootTableItem(FallowItems.RADISH_SEEDS))
+            .add(LootItem.lootTableItem(FallowItems.PARSNIP_SEEDS))
+            .add(LootItem.lootTableItem(FallowItems.LEEK_SEEDS))
+            .add(LootItem.lootTableItem(FallowItems.FLAX_SEEDS))
+            .add(LootItem.lootTableItem(FallowItems.PEPPER_SEEDS))
+            .add(LootItem.lootTableItem(FallowItems.SQUASH_SEEDS))
+            .add(LootItem.lootTableItem(FallowItems.TOMATO_SEEDS))
+            .add(LootItem.lootTableItem(FallowItems.CUCUMBER_SEEDS))
+            .add(LootItem.lootTableItem(FallowItems.CORN_SEEDS));
     }
 }

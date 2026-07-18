@@ -7,6 +7,13 @@
     "minecraft:pumpkin",
     "fallow:turnip",
     "fallow:cabbage",
-    "fallow:onion"
+    "fallow:onion",
+    "fallow:leek",
+    "fallow:garlic",
+    "fallow:radish",
+    "fallow:parsnip",
+    "fallow:pepper",
+    "fallow:tomato",
+    "fallow:cucumber"
   ]
 }

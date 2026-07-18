@@ -725,6 +725,8 @@ public final class FallowConfig {
             map.put("minecraft:dark_oak_leaves", new FruitType("minecraft:apple", "autumn", 0.01));
             // Cherry leaves drop fallow:cherries in spring - only active when the crop layer is on.
             map.put("minecraft:cherry_leaves", new FruitType("fallow:cherries", "spring", 0.01));
+            // Flowering azalea leaves drop fallow:plum in autumn - crop layer only.
+            map.put("minecraft:flowering_azalea_leaves", new FruitType("fallow:plum", "autumn", 0.008));
             return map;
         }
     }
@@ -773,6 +775,25 @@ public final class FallowConfig {
             map.put("fallow:onion_crop",      new SeasonWeights(1.0, 0.7, 1.0, 0.0));
             map.put("fallow:strawberry_bush", new SeasonWeights(1.0, 0.5, 0.2, 0.0));
             map.put("fallow:pea_crop",        new SeasonWeights(1.0, 0.6, 0.3, 0.0));
+            // Phase C2/C3 crops.
+            map.put("fallow:leek_crop",       new SeasonWeights(0.8, 0.6, 1.0, 0.35));
+            map.put("fallow:barley_crop",     new SeasonWeights(1.0, 0.7, 0.9, 0.15));
+            map.put("fallow:rye_crop",        new SeasonWeights(0.9, 0.5, 1.0, 0.3));
+            map.put("fallow:oat_crop",        new SeasonWeights(1.0, 0.7, 0.8, 0.0));
+            map.put("fallow:garlic_crop",     new SeasonWeights(0.9, 0.4, 1.0, 0.2));
+            map.put("fallow:radish_crop",     new SeasonWeights(1.0, 0.6, 1.0, 0.0));
+            map.put("fallow:parsnip_crop",    new SeasonWeights(0.8, 0.6, 1.0, 0.25));
+            map.put("fallow:pepper_crop",     new SeasonWeights(0.6, 1.0, 0.7, 0.0));
+            map.put("fallow:flax_crop",       new SeasonWeights(1.0, 0.8, 0.5, 0.0));
+            map.put("fallow:tomato_crop",     new SeasonWeights(0.7, 1.0, 0.6, 0.0));
+            map.put("fallow:rice_crop",       new SeasonWeights(0.5, 1.0, 0.8, 0.0));
+            map.put("fallow:corn_crop",       new SeasonWeights(0.7, 1.0, 0.8, 0.0));
+            map.put("fallow:cucumber_crop",   new SeasonWeights(0.8, 1.0, 0.6, 0.0));
+            map.put("fallow:grape_crop",      new SeasonWeights(0.8, 1.0, 0.9, 0.0));
+            map.put("fallow:hops_crop",       new SeasonWeights(0.9, 1.0, 0.8, 0.0));
+            map.put("fallow:raspberry_bush",  new SeasonWeights(1.0, 1.0, 0.4, 0.0));
+            map.put("fallow:blackberry_bush", new SeasonWeights(0.9, 1.0, 0.5, 0.0));
+            map.put("fallow:squash_stem",     new SeasonWeights(0.8, 1.0, 1.0, 0.0));
             return map;
         }
 
@@ -781,6 +802,9 @@ public final class FallowConfig {
 
         /** Legume nitrogen-fixing behaviour. */
         public Legumes legumes = new Legumes();
+
+        /** Rice paddy behaviour: rice needs nearby water to grow. */
+        public Paddy paddy = new Paddy();
 
         public static final class Wild {
             public boolean enabled = true;
@@ -798,6 +822,25 @@ public final class FallowConfig {
                     List.of("#minecraft:is_forest"));
                 map.put("fallow:strawberry_bush",
                     List.of("minecraft:meadow", "minecraft:plains", "#minecraft:is_forest"));
+                // Phase C3 wild forage plants.
+                map.put("fallow:wild_rice",
+                    List.of("minecraft:swamp", "minecraft:mangrove_swamp", "#minecraft:is_river"));
+                map.put("fallow:wild_grape_vine",
+                    List.of("#minecraft:is_savanna", "minecraft:meadow", "minecraft:sunflower_plains"));
+                map.put("fallow:wild_hops",
+                    List.of("#minecraft:is_forest", "minecraft:river"));
+                map.put("fallow:chanterelle",
+                    List.of("#minecraft:is_forest", "#minecraft:is_taiga"));
+                map.put("fallow:mint",
+                    List.of("minecraft:river", "minecraft:meadow", "minecraft:swamp"));
+                map.put("fallow:sage",
+                    List.of("#minecraft:is_savanna", "minecraft:plains"));
+                map.put("fallow:thyme",
+                    List.of("minecraft:plains", "#minecraft:is_savanna"));
+                map.put("fallow:ramsons",
+                    List.of("#minecraft:is_forest"));
+                map.put("fallow:sorrel",
+                    List.of("minecraft:plains", "minecraft:meadow", "#minecraft:is_forest"));
                 return map;
             }
         }
@@ -810,6 +853,14 @@ public final class FallowConfig {
              * (y-1..0). Clamped 0-4.
              */
             public int fixRadius = 1;
+        }
+
+        public static final class Paddy {
+            /**
+             * Horizontal radius (blocks) within which rice must find water to grow. The scan
+             * checks the farmland's own Y and one below. Clamped 0-8.
+             */
+            public int range = 4;
         }
     }
 
@@ -994,6 +1045,7 @@ public final class FallowConfig {
         }
         crops.seedDropChance = clampChance(crops.seedDropChance);
         crops.legumes.fixRadius = clampInt(crops.legumes.fixRadius, 0, 4);
+        crops.paddy.range = clampInt(crops.paddy.range, 0, 8);
         crops.wild.forageChance = clampChance(crops.wild.forageChance);
         if (crops.cropSeasons != null) {
             crops.cropSeasons.values().forEach(FallowConfig::clampWeights);

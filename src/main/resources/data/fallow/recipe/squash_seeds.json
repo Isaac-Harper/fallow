@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "fallow:squash"
+  ],
+  "result": {
+    "id": "fallow:squash_seeds",
+    "count": 4
+  }
+}

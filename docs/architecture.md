@@ -554,47 +554,76 @@ Two decay tasks give vegetation a yearly rhythm, both scaled by the season decay
 Still future: **vines/moss aging on shaded stone** - possible task type; noted, deliberately
 given no design weight. **Mushroom spread excluded**: vanilla already does it.
 
-## Crops (Phase C1)
+## Crops
 
 The crop layer adds the first real new blocks Fallow ships. Two growth paths are used, each
 where it fits the goal:
 
-**Player-planted crops on the vanilla random tick.** `FallowCropBlock` (the base for turnip,
-cabbage, onion) subclasses `CropBlock` with `BeetrootBlock`'s four-age pattern (0-3) and
-overrides `randomTick`. Before delegating to vanilla growth it applies two gates (both only when
-`crops.enabled && crops.seasonGating && seasons.enabled`):
+**Player-planted crops on the vanilla random tick.** `FallowCropBlock` (the base for all
+standard farmland crops: turnip, cabbage, onion, leek, barley, rye, oat, garlic, radish,
+parsnip, pepper, flax, tomato, rice) subclasses `CropBlock` with `BeetrootBlock`'s four-age
+pattern (0-3) and overrides `randomTick`. Before delegating to vanilla growth it applies the
+following logic (active only when `crops.enabled && crops.seasonGating && seasons.enabled`):
 
 1. Per-crop seasonal weight via `crops.cropSeasonWeight(blockId, season)`, which reads the
    `cropSeasons` map. Missing entries default to 1.0. A weight of 0.0 in winter with
    `crops.winterKill=true` converts the block to `fallow:withered_crop`; without kill, or for a
    non-zero weight, the tick simply returns. Otherwise the weight is a probability gate on the
    random float: a weight of 0.5 lets roughly half the ticks through.
-2. The shared seasonal curve does not apply again here - the per-crop weight is the sole seasonal
-   term, for the same double-counting reason as `bushSeasons` and `phenology`. The random tick is
-   vanilla; season lives only in the gate, not in any rate layer.
+2. After the season gate, `canGrowHere(level, pos)` is called. The default returns true; rice
+   overrides this with the paddy rule (see below) to stall without killing.
+3. The shared seasonal curve does not apply again here - the per-crop weight is the sole seasonal
+   term, for the same double-counting reason as `bushSeasons` and `phenology`.
 
-`StrawberryBushBlock` follows the same pattern (sweet-berry idiom, right-click harvest, no
-contact damage) but never triggers winter kill, only stall. `PeaCropBlock` is a `VegetationBlock`
-on the trellis rather than a farmland crop; winter kill reverts it to the bare trellis rather
-than a withered husk.
+**Rice paddy rule.** `RiceCropBlock` overrides `canGrowHere` to call `RicePaddy.hasWaterWithin`:
+a pure geometry scan over a flat (2*range+1) square on the farmland's Y and one block below,
+checking each position against a water predicate. If no water is found within `crops.paddy.range`
+blocks (default 4), growth stalls without a winter-kill. `RicePaddy` is a stateless utility class
+with no Minecraft types, making it directly unit-testable.
+
+**Corn - double-height stalk.** `CornCropBlock` subclasses `DoublePlantBlock` (like vanilla
+pitcher crop). Ages 0-3; the lower half drives ticks, the upper half appears at age 2 and is kept
+in sync. Below the double threshold the block is a single low block and `updateShape` does not
+invoke `DoublePlantBlock`'s paired-half bookkeeping. Above it, breaking either half clears both
+via the vanilla inherited behavior. Winter-kill clears the upper half to air and replaces the
+lower half with the dead husk.
+
+**Trellis climbers.** `TrellisCropBlock` is the shared abstract base for pea, cucumber, grape,
+and hops. Ages 0-3. Right-clicking at age 3 harvests the crop item and resets to age 1; the
+trellis structure persists. On winter-kill the climber reverts to a bare `fallow:trellis` block
+rather than a dead husk. Subclasses supply the block id, harvest item, min/max harvest count, and
+clone item. A `onReachedMaxAge` / `onHarvest` hook lets the pea subclass add nitrogen fixing
+without duplicating the shared flow.
+
+**Berry bushes.** `BerryBushBlock` is the shared abstract base for strawberry, raspberry, and
+blackberry. Sweet-berry idiom: ages 0-3, right-click at age 2+ harvests and resets to age 1, no
+contact damage. Bushes stall in winter but are never winter-killed; only the age check (not a
+kill path) prevents growth at 0 weight.
+
+**Squash stem.** `SquashStemBlock` subclasses vanilla `StemBlock`, reusing its grow/fruit
+lifecycle (fruit: `fallow:squash`, attached stem: `fallow:attached_squash_stem`). It rides
+vanilla's pumpkin support tags (`#supports_pumpkin_stem`, `#supports_pumpkin_stem_fruit`) so no
+new block tags are needed. The one addition over vanilla is a `randomTick` override that applies
+the season gate (key `fallow:squash_stem`) before delegating to `StemBlock.randomTick`.
 
 **Onion** is carrot-style: `FallowItems.ONION` is a `BlockItem` pointing to `OnionCropBlock`,
 so right-clicking farmland with an onion plants it directly, and the mature crop drops onions.
 
-**Wild crops through `ForageSpreadTask`.** The task implements `EcologyTask` and registers on
+**Wild forage through `ForageSpreadTask`.** The task implements `EcologyTask` and registers on
 the scheduler. It is column-sampling like `VegetationSproutTask`: random heightmap surface,
 grass-block ground, light check, biome eligibility against `crops.wild.homes`, density guard
 (max 2 of the same plant within radius 8), then `canSurvive` + `setBlock`. Biome matching
 supports exact ids and `#tag` entries. The task runs through the `FORAGE` growth channel, which
 follows the shared seasonal curve (not per-species-exempt): wild spread slows naturally in
 winter alongside the rest of the ecosystem, unlike player crops which use per-crop weights.
+Eleven plants have configured homes: wild onion, strawberry bush, wild rice, wild grape vine,
+wild hops, chanterelle, mint, sage, thyme, ramsons, and sorrel.
 
 **Trellis state machine.** `TrellisBlock` (a `BushBlock`) carries no age property. Right-clicking
-it with `fallow:pea_seeds` converts it to `fallow:pea_crop` at age 0, consuming one seed (via
-`useItemOn`). `PeaCropBlock` grows age 0-3 on random ticks; at age 3 it stops ticking and
-stays harvestable until right-clicked (drops 2-3 peas, resets to age 1). Winter kill reverts
-the pea crop to a bare trellis. Breaking the trellis block itself yields the trellis item
-(handled by its loot table).
+it with the appropriate seed item converts it to the climber crop at age 0, consuming one seed.
+The climber grows age 0-3 on random ticks and stays harvestable at age 3 until right-clicked.
+Winter kill reverts the crop to a bare trellis. Breaking the trellis block itself yields the
+trellis item (handled by its loot table).
 
 **Nitrogen fixing.** When a pea crop reaches age 3 or is right-click harvested, `tryFixNitrogen`
 scans the box `(fixRadius horizontal, y-1..0)` around the ground block for coarse dirt or rooted
@@ -606,15 +635,16 @@ dirt and converts one randomly chosen candidate to plain dirt. Gated by
 `LootItemCondition` registered as `fallow:crops_enabled` that passes when both `enabled` and
 `crops.enabled` are true. `GrassSeedDrops` injects an extra loot pool into vanilla's
 `blocks/short_grass` and `blocks/tall_grass` tables via `LootTableEvents.MODIFY`: one roll,
-conditions `[crops_enabled, random_chance(seedDropChance)]`, one-of turnip seeds / cabbage seeds
-/ pea seeds at equal weight. The `seedDropChance` constant is baked from the config at
-registration time (server start or `/reload`), not re-read per-break.
+conditions `[crops_enabled, random_chance(seedDropChance)]`, one-of 15 crop seeds at equal weight
+(turnip, cabbage, pea, barley, rye, oat, radish, parsnip, leek, flax, pepper, squash, tomato,
+cucumber, corn - rice is excluded, obtained from wild rice only). The `seedDropChance` constant
+is baked from the config at registration time (server start or `/reload`), not re-read per-break.
 
-**`FruitDropTask` fallow-namespace gate.** Cherry leaves are added to the `fruiting.types`
-defaults (`minecraft:cherry_leaves` -> `fallow:cherries`, spring). `FruitDropTask` guards any
-entry whose `item` starts with `fallow:` behind `crops.enabled`: if the crop layer is off the
-drop is silently skipped, so the cherry grove visit never produces an item that has no gameplay
-registration context.
+**`FruitDropTask` fallow-namespace gate.** Cherry and plum are added to the `fruiting.types`
+defaults (`minecraft:cherry_leaves` -> `fallow:cherries`, spring; `minecraft:flowering_azalea_leaves`
+-> `fallow:plum`, autumn, chance 0.008). `FruitDropTask` guards any entry whose `item` starts
+with `fallow:` behind `crops.enabled`: if the crop layer is off the drop is silently skipped, so
+visits never produce items that have no gameplay registration context.
 
 **Registration order.** `FallowBlocks.register()` must be called before `FallowItems.register()`
 because the seed `BlockItem` constructors take a reference to the already-registered block
@@ -626,5 +656,5 @@ implementation time. Omit from any player-facing rendering discussion until reso
 ## Future work (explicitly out of v1)
 
 - Snowy-biome summer thaw tuning; masting (irregular bumper seed years for oaks/pale_oak) - noted.
-- Crops Phase C2 (rice/paddy, maize/tall-stalk, tomato, cucumber) and Phase C3 (extended roster,
-  preservation layer, diet mechanic) - see docs/crops.md sections 11+ for phasing.
+- Crops: preservation layer (pickled cucumber, jam, raisins, dried mushrooms) and the diet
+  mechanic that consumes the `fallow:diet/*` tags - see docs/crops.md for phasing.

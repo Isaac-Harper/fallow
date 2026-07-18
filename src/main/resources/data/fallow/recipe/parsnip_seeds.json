@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "fallow:parsnip"
+  ],
+  "result": {
+    "id": "fallow:parsnip_seeds",
+    "count": 1
+  }
+}

@@ -19,11 +19,12 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.tags.BlockTags;
 
 /**
- * Decorative lattice block. Right-clicking with {@code fallow:pea_seeds} converts it to
- * {@code fallow:pea_crop} at age 0, consuming one seed. No age, no drops from the trellis
- * itself (loot is handled in the pea_crop loot table by the resources agent).
+ * Decorative lattice block. Right-clicking with a climber's planting item converts it to that
+ * crop at age 0, consuming one item: {@code fallow:pea_seeds} -> pea, {@code fallow:cucumber_seeds}
+ * -> cucumber, {@code fallow:grapes} -> grape, {@code fallow:hop_cones} -> hops. No age, no drops
+ * from the trellis itself (loot is handled in each crop's loot table by the resources agent).
  *
- * <p>Survives on dirt family / grass / farmland (same ground rule as pea_crop).
+ * <p>Survives on dirt family / grass / farmland (same ground rule as the crops).
  */
 public final class TrellisBlock extends BushBlock {
     @SuppressWarnings("unchecked")
@@ -47,20 +48,20 @@ public final class TrellisBlock extends BushBlock {
     }
 
     /**
-     * Using pea seeds on the trellis converts it to a pea crop at age 0, consuming one seed.
-     * The crop-plant sound plays; the interaction is consumed.
+     * Using a climber's planting item on the trellis converts it to that crop at age 0, consuming
+     * one item. The crop-plant sound plays; the interaction is consumed.
      */
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level,
             BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
-        if (!stack.is(FallowItems.PEA_SEEDS)) {
+        Block crop = cropFor(stack);
+        if (crop == null) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide()) {
             level.setBlock(pos,
-                FallowBlocks.PEA_CROP.defaultBlockState()
-                    .setValue(PeaCropBlock.AGE, 0),
+                crop.defaultBlockState().setValue(TrellisCropBlock.AGE, 0),
                 Block.UPDATE_ALL);
             level.playSound(null, pos, SoundEvents.CROP_PLANTED,
                 SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -69,5 +70,22 @@ public final class TrellisBlock extends BushBlock {
             }
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /** The trellis crop a planting item starts, or null if the item plants nothing. */
+    private static Block cropFor(ItemStack stack) {
+        if (stack.is(FallowItems.PEA_SEEDS)) {
+            return FallowBlocks.PEA_CROP;
+        }
+        if (stack.is(FallowItems.CUCUMBER_SEEDS)) {
+            return FallowBlocks.CUCUMBER_CROP;
+        }
+        if (stack.is(FallowItems.GRAPES)) {
+            return FallowBlocks.GRAPE_CROP;
+        }
+        if (stack.is(FallowItems.HOP_CONES)) {
+            return FallowBlocks.HOPS_CROP;
+        }
+        return null;
     }
 }

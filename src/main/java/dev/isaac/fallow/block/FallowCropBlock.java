@@ -81,8 +81,19 @@ public abstract class FallowCropBlock extends CropBlock {
             // Gating inactive and already at max age: nothing to do (mirrors vanilla no-op).
             return;
         }
+        if (!canGrowHere(level, pos)) {
+            return; // subclass ground condition failed (e.g. rice paddy); stall, no kill
+        }
         // Delegate growth step; vanilla CropBlock.randomTick guards age < maxAge internally.
         super.randomTick(state, level, pos, random);
+    }
+
+    /**
+     * Extra per-crop ground condition checked after the season gate, before the growth step.
+     * Default true; subclasses (e.g. rice's paddy rule) override to stall growth without killing.
+     */
+    protected boolean canGrowHere(ServerLevel level, BlockPos pos) {
+        return true;
     }
 
     /**

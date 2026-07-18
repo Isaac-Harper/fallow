@@ -7,6 +7,10 @@
     "minecraft:glow_berries",
     "minecraft:chorus_fruit",
     "fallow:cherries",
-    "fallow:strawberries"
+    "fallow:strawberries",
+    "fallow:grapes",
+    "fallow:plum",
+    "fallow:raspberries",
+    "fallow:blackberries"
   ]
 }

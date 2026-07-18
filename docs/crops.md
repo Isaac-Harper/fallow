@@ -1,9 +1,20 @@
 # Fallow - crops (design proposal)
 
-Status: **Phase C1 implemented** (2026-07-18). The Tier 1 crop roster (turnip, cabbage, onion,
-cherry, strawberry, peas), the trellis block, `ForageSpreadTask`, season-gated farmland growth
-with winter kill, legume nitrogen fixing, and the `diet/*` item tags are all shipped and live
-behind `crops.enabled` (default `false`). Phases C2 and C3 remain design only.
+Status: **Phases C1, C2, and the C3 extended roster implemented** (2026-07-18). The full crop
+roster is shipped and live behind `crops.enabled` (default `false`):
+
+- **C1:** Turnip, cabbage, onion, cherry, strawberry, peas; the trellis block; `ForageSpreadTask`
+  with wild onion and strawberry bush; season-gated farmland growth with winter kill; legume
+  nitrogen fixing; and the `diet/*` item tags.
+- **C2:** Rice (paddy mechanic, `RicePaddy`), corn (double-height `CornCropBlock`), tomato,
+  cucumber on the trellis.
+- **C3 roster:** Leek, barley, rye, oat, garlic, radish, parsnip, pepper, flax; grapes and hops
+  on the trellis; raspberry and blackberry bushes; squash (stem crop); plum (fruiting.types);
+  eleven wild forage plants (wild rice, wild grape vine, wild hops, chanterelle, mint, sage,
+  thyme, ramsons, sorrel, plus existing wild onion and strawberry bush).
+
+Still future: the preservation layer (pickled cucumber, jam, raisins, dried mushrooms) and the
+diet mechanic that consumes the `fallow:diet/*` tags.
 
 The document below is the design record as written; see [features.md](features.md) for the
 plain-language tour and [configuration.md](configuration.md) for the full config reference.
@@ -488,15 +499,16 @@ The open questions this proposal shipped with, resolved 2026-07-18:
 
 ## 11. Phasing
 
-- **Phase C1 (v1):** Tier 1 crops (turnip, cabbage, onion, cherry, strawberry, peas), the
-  **trellis block** peas climb, the `ForageSpreadTask` with wild onion + strawberry, season-gated
-  farmland growth with winter kill, legume nitrogen fixing, and the `diet/*` tags. Reuses idioms A,
-  B, C, and the scheduler; the trellis and the legume hook are the genuinely new behavior.
-- **Phase C2:** Tier 2 (rice/paddy, maize/tall-stalk, tomato, cucumber on the existing trellis).
-  The C2 textures are already drawn and ship with C1 (`crops_art.py`, marked "Phase C2 art"):
-  rice stages, the two-block corn stalk (seam-matched top and bottom halves), staked tomato,
-  trellis cucumber, and the eight foods/seeds. C2 implementation is wiring, not art.
-- **Phase C3:** Extended roster as desired (brewing line with barley + hops, grapes, squash,
-  sunflower/apple vanilla extensions, herbs, flax) plus the preservation layer that winter scarcity
-  motivates.
-- **Later, separate:** the diet mechanic itself, consuming the tags this layer ships.
+- **Phase C1 (implemented):** Tier 1 crops (turnip, cabbage, onion, cherry, strawberry, peas),
+  the trellis block, `ForageSpreadTask` with wild onion and strawberry bush, season-gated farmland
+  growth with winter kill, legume nitrogen fixing, and the `diet/*` tags.
+- **Phase C2 (implemented):** Tier 2 - rice with the paddy mechanic (`RicePaddy`,
+  `crops.paddy.range`), corn as a double-height stalk (`CornCropBlock`), tomato, and cucumber on
+  the existing trellis.
+- **Phase C3 roster (implemented):** Leek, barley, rye, oat, garlic, radish, parsnip, pepper,
+  flax; grapes and hops on the trellis; raspberry and blackberry bushes; squash stem crop; plum
+  via `fruiting.types`; and eleven wild forage plants spread by `ForageSpreadTask`.
+- **C3 preservation layer (future):** Pickled cucumber, jam from berries/cherries, raisins from
+  grapes, dried mushrooms - crafted in warm seasons, consumed in winter for diet variety.
+- **Later, separate:** The diet mechanic itself, consuming the `fallow:diet/*` tags this layer
+  ships.

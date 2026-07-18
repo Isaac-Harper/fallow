@@ -150,8 +150,8 @@ pattern carry one. See docs/research.md section 5 for the per-species reasoning 
 | `minecraft:mangrove_propagule` | 0.7 | 12 | 5 | 0.55 / 1.0 / 0.9 / 0.5 (year-round, late-summer peak) |
 | `minecraft:jungle_sapling` | 1.0 | 11 | 6 | 1.0 / 1.0 / 1.0 / 1.0 (aseasonal) |
 | `minecraft:oak_sapling` | 0.6 | 9 | 4 | 0 / 0 / 1.0 / 0 (autumn only) |
-| `minecraft:dark_oak_sapling` | 0.5 | 8 | 6 | - (shared: spring) |
-| `minecraft:pale_oak_sapling` | 0.35 | 8 | 4 | - (shared: spring) |
+| `minecraft:dark_oak_sapling` | 0.5 | 8 | 10 | - (shared: spring) |
+| `minecraft:pale_oak_sapling` | 0.35 | 8 | 8 | - (shared: spring) |
 
 ## trails - footstep wear *(event-based, not scheduler-driven)*
 
@@ -367,11 +367,13 @@ its season.
 season `autumn`, chance `0.01` (vanilla's only tree fruit; the map is open for modded items).
 Also `minecraft:cherry_leaves` -> `fallow:cherries`, season `spring`, chance `0.01`: cherry grove
 trees drop cherries beneath their canopy in spring, the same way oaks drop apples in autumn.
-`chance` is further scaled by the biome growth multiplier and stalled by a heatwave, like every
-growth channel. An entry's `season` must be `spring`/`summer`/`autumn`/`winter`; anything else is
-nulled with a log warning and means every season, as does disabling seasons entirely. Entries
-whose `item` starts with `fallow:` are additionally gated by `crops.enabled`: they are silently
-skipped when the crop layer is off (the items don't exist in gameplay without it).
+And `minecraft:flowering_azalea_leaves` -> `fallow:plum`, season `autumn`, chance `0.008`: plum
+drops in autumn beneath flowering azalea. `chance` is further scaled by the biome growth
+multiplier and stalled by a heatwave, like every growth channel. An entry's `season` must be
+`spring`/`summer`/`autumn`/`winter`; anything else is nulled with a log warning and means every
+season, as does disabling seasons entirely. Entries whose `item` starts with `fallow:` are
+additionally gated by `crops.enabled`: they are silently skipped when the crop layer is off (the
+items don't exist in gameplay without it).
 
 Two more `vegetation` knobs (alongside `biomeDensity`/`biomeGrowth`/`biomeSeasonality`):
 **`biomeSeasonPhase`** (id/tag -> 0-3) shifts which season a biome's growth peaks in - default
@@ -380,7 +382,7 @@ biases flower selection toward in-season flowers the biome already offers. And `
 **`springFall`/`summerFall`/`autumnFall`/`winterFall`** (default `0.4/0.3/1.5/0.5`) - the
 autumn-peaked curve driving both litter accumulation and the client falling-leaf particle rate.
 
-## crops - Phase C1 crop and forage layer
+## crops - crop and forage layer
 
 A second opt-in on top of the master switch. All fields except `removalNote` are re-read on
 `/fallow reload`. When `crops.enabled` is `false` no wild crops spread, the forage task does not
@@ -392,13 +394,13 @@ and items are still registered so existing worlds do not corrupt.
 | `removalNote` | see below | string | Informational notice (not functional). Reminds operators that planted crop blocks are real `fallow:*` blocks that become unknown blocks if the mod is removed, unlike the rest of Fallow. |
 | `enabled` | `false` | bool | Master switch for the crop layer. Off by default for the same reason Fallow itself is off by default: planted blocks persist. |
 | `seasonGating` | `true` | bool | When true, each crop's random-tick growth is scaled by its per-season weight from `cropSeasons`. When false, crops grow at vanilla speed regardless of season. |
-| `winterKill` | `true` | bool | When true, a standing crop whose `cropSeasons` winter weight is <= 0 withers to `fallow:withered_crop` on its next random tick. Turnip (winter weight 0.25) is not affected. Pea vines revert to a bare trellis instead of a withered husk. Strawberry bushes stall in winter regardless of this flag (they never die). |
-| `seedDropChance` | `0.05` | 0-1 | Chance per short/tall grass break to drop one of turnip seeds, cabbage seeds, or pea seeds (equal weight, gated by `fallow:crops_enabled` loot condition). |
+| `winterKill` | `true` | bool | When true, a standing crop whose `cropSeasons` winter weight is <= 0 withers to `fallow:withered_crop` on its next random tick. Crops with non-zero winter weights (turnip, leek, barley, rye, garlic, parsnip) trickle rather than die. Pea vines (and all trellis climbers) revert to a bare trellis instead of a withered husk. Bushes stall in winter regardless of this flag (they never die from winter-kill). |
+| `seedDropChance` | `0.05` | 0-1 | Chance per short/tall grass break to drop one of the 15 crop seeds at equal weight (gated by `fallow:crops_enabled` loot condition). Rice is excluded from this pool; it is obtained from wild rice only. |
 
 ### crops.cropSeasons - per-crop seasonal growth weights
 
 The four values `{spring, summer, autumn, winter}` set how strongly that crop grows in each
-season; 1.0 means normal vanilla-rate growth, 0.0 stalls it entirely. The weights used as a
+season; 1.0 means normal vanilla-rate growth, 0.0 stalls it entirely. The weights are used as a
 probability gate on the random tick: a weight of 0.5 means roughly half the ticks that would
 normally trigger growth are skipped. Missing crop entries default to 1.0 in all seasons.
 
@@ -409,8 +411,32 @@ normally trigger growth are skipped. Missing crop entries default to 1.0 in all 
 | `fallow:onion_crop` | 1.0 | 0.7 | 1.0 | 0.0 |
 | `fallow:strawberry_bush` | 1.0 | 0.5 | 0.2 | 0.0 |
 | `fallow:pea_crop` | 1.0 | 0.6 | 0.3 | 0.0 |
+| `fallow:leek_crop` | 0.8 | 0.6 | 1.0 | 0.35 |
+| `fallow:barley_crop` | 1.0 | 0.7 | 0.9 | 0.15 |
+| `fallow:rye_crop` | 0.9 | 0.5 | 1.0 | 0.3 |
+| `fallow:oat_crop` | 1.0 | 0.7 | 0.8 | 0.0 |
+| `fallow:garlic_crop` | 0.9 | 0.4 | 1.0 | 0.2 |
+| `fallow:radish_crop` | 1.0 | 0.6 | 1.0 | 0.0 |
+| `fallow:parsnip_crop` | 0.8 | 0.6 | 1.0 | 0.25 |
+| `fallow:pepper_crop` | 0.6 | 1.0 | 0.7 | 0.0 |
+| `fallow:flax_crop` | 1.0 | 0.8 | 0.5 | 0.0 |
+| `fallow:tomato_crop` | 0.7 | 1.0 | 0.6 | 0.0 |
+| `fallow:rice_crop` | 0.5 | 1.0 | 0.8 | 0.0 |
+| `fallow:corn_crop` | 0.7 | 1.0 | 0.8 | 0.0 |
+| `fallow:cucumber_crop` | 0.8 | 1.0 | 0.6 | 0.0 |
+| `fallow:grape_crop` | 0.8 | 1.0 | 0.9 | 0.0 |
+| `fallow:hops_crop` | 0.9 | 1.0 | 0.8 | 0.0 |
+| `fallow:raspberry_bush` | 1.0 | 1.0 | 0.4 | 0.0 |
+| `fallow:blackberry_bush` | 0.9 | 1.0 | 0.5 | 0.0 |
+| `fallow:squash_stem` | 0.8 | 1.0 | 1.0 | 0.0 |
 
-Note: `minecraft:cherry_leaves` fruiting is handled via the `fruiting.types` map, not here.
+Note: cherry and plum fruiting are handled via the `fruiting.types` map, not here.
+
+### crops.paddy - rice paddy rule
+
+| field | default | range | meaning |
+|---|---|---|---|
+| `range` | `4` | 0-8 | Horizontal radius (blocks) within which rice must find water to grow. The scan checks the farmland's own Y and one block below. Set to 0 to disable the paddy requirement (rice grows anywhere). |
 
 ### crops.wild - wild forage spread
 
@@ -425,8 +451,21 @@ when `crops.enabled` is false.
 | `forageChance` | `0.004` | 0-1 | Chance per sampled candidate column that a wild plant spreads. Further scaled by season and biome via the FORAGE channel. |
 | `homes` | see below | plant id -> list | Biome home list for each wild plant: entries are exact biome ids (`minecraft:meadow`) or biome tags (`#minecraft:is_forest`). A plant is only placed when the candidate biome matches at least one entry. |
 
-**`homes` defaults:** `fallow:wild_onion` -> `["#minecraft:is_forest"]`;
-`fallow:strawberry_bush` -> `["minecraft:meadow", "minecraft:plains", "#minecraft:is_forest"]`.
+**`homes` defaults** (absent entries are never placed):
+
+| plant id | biome homes |
+|---|---|
+| `fallow:wild_onion` | `#minecraft:is_forest` |
+| `fallow:strawberry_bush` | `minecraft:meadow`, `minecraft:plains`, `#minecraft:is_forest` |
+| `fallow:wild_rice` | `minecraft:swamp`, `minecraft:mangrove_swamp`, `#minecraft:is_river` |
+| `fallow:wild_grape_vine` | `#minecraft:is_savanna`, `minecraft:meadow`, `minecraft:sunflower_plains` |
+| `fallow:wild_hops` | `#minecraft:is_forest`, `minecraft:river` |
+| `fallow:chanterelle` | `#minecraft:is_forest`, `#minecraft:is_taiga` |
+| `fallow:mint` | `minecraft:river`, `minecraft:meadow`, `minecraft:swamp` |
+| `fallow:sage` | `#minecraft:is_savanna`, `minecraft:plains` |
+| `fallow:thyme` | `minecraft:plains`, `#minecraft:is_savanna` |
+| `fallow:ramsons` | `#minecraft:is_forest` |
+| `fallow:sorrel` | `minecraft:plains`, `minecraft:meadow`, `#minecraft:is_forest` |
 
 ### crops.legumes - nitrogen fixing
 

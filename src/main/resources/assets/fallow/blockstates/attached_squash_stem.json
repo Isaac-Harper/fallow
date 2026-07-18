@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "fallow:block/attached_squash_stem",
+      "y": 180
+    },
+    "facing=north": {
+      "model": "fallow:block/attached_squash_stem",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "fallow:block/attached_squash_stem",
+      "y": 270
+    },
+    "facing=west": {
+      "model": "fallow:block/attached_squash_stem"
+    }
+  }
+}

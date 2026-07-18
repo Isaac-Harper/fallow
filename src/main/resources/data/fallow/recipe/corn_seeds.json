@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "fallow:corn"
+  ],
+  "result": {
+    "id": "fallow:corn_seeds",
+    "count": 1
+  }
+}

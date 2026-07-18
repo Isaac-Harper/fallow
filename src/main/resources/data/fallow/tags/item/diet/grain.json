@@ -1,6 +1,11 @@
 {
   "values": [
     "minecraft:wheat",
-    "minecraft:bread"
+    "minecraft:bread",
+    "fallow:barley",
+    "fallow:rye",
+    "fallow:oats",
+    "fallow:rice",
+    "fallow:corn"
   ]
 }
