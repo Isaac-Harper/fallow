@@ -131,5 +131,15 @@
   "item.fallow.sage": "Sage",
   "item.fallow.thyme": "Thyme",
   "item.fallow.ramsons": "Ramsons",
-  "item.fallow.sorrel": "Sorrel"
+  "item.fallow.sorrel": "Sorrel",
+
+  "fallow.diet.group_added": "%s joins your diet",
+  "fallow.diet.status.covered": "Covered: %s",
+  "fallow.diet.status.header": "Diet window: %s of %s distinct groups",
+  "fallow.diet.status.meals": "Meals in window: %s",
+  "fallow.diet.status.missing": "Missing: %s",
+  "fallow.diet.status.tier": "Tier: %s",
+  "fallow.diet.tier.none": "none",
+  "fallow.diet.tier.one": "1 (Absorption I)",
+  "fallow.diet.tier.two": "2 (Absorption II)"
 }

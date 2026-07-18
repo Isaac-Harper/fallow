@@ -1,6 +1,7 @@
 # Fallow - diet (design proposal)
 
-Status: **design, not built.** This document scopes the diet mechanic that the crop layer's
+Status: **D1 implemented** (2026-07-18), live behind `diet.enabled` (default `false`). D2
+(preservation) and later phases remain design. This document scopes the diet mechanic that the crop layer's
 `fallow:diet/*` item tags were shipped to feed ([crops.md](crops.md) section 7.5). Nothing here
 ships until it is implemented behind its own config module (`diet.enabled`, default `false`,
 under the master `enabled` switch).
@@ -31,9 +32,11 @@ never punishes ignoring it. A player who eats nothing but bread plays exactly va
 ## 2. The mechanic
 
 **Rolling meal window.** Each player has a rolling list of their last `windowSize` meals
-(default 12). Eating any food appends its diet groups (an item can carry several tags; each
-counts). The oldest meal falls off the end. Measured in meals, not days, so season length and
-day-cycle settings do not change the tuning.
+(default 12). Eating a food that carries at least one diet group appends that meal (an item
+can carry several tags; each counts); untagged food and drinks are ignored - they neither
+help nor harm, and stale variety ages out through the time expiry instead. The oldest meal
+falls off the end. Measured in meals, not days, so season length and day-cycle settings do
+not change the tuning.
 
 **Variety score.** The score is the number of *distinct* groups present in the window (0-6).
 
@@ -41,8 +44,8 @@ day-cycle settings do not change the tuning.
 
 | distinct groups | bonus |
 |---|---|
-| 4+ | `wellFedMinor`: one extra row-half of absorption hearts (2 points), refreshed while the score holds |
-| 6 | `wellFedFull`: four absorption points and a touch of extra saturation efficiency |
+| 4+ | Absorption I (two extra hearts), refreshed while the score holds |
+| 6 | Absorption II (four extra hearts) |
 
 Absorption is the right lever: it is visible on the HUD without new UI, it decays naturally if
 the score lapses, and it never interferes with hunger math. Exact values are config knobs; the
@@ -75,14 +78,18 @@ are missing, and the current tier. On first covering a new group, a one-line act
 
 ---
 
-## 4. Open decisions
+## 4. Decisions (resolved 2026-07-18)
 
-- **Absorption vs. attribute hearts.** Absorption decays and self-communicates; a max-health
-  attribute is stickier but reads as "the mod took my hearts" when it lapses. Leaning
-  absorption.
-- **Do meals expire by time as well as by count?** A pure meal-count window never decays for
-  an idle player. Option: entries also expire after N in-game days (default off). Decide
-  during playtesting.
+- **Absorption.** The bonus is the vanilla absorption effect, refreshed while the tier
+  holds: Absorption I (two hearts) at 4+ groups, Absorption II (four hearts) at all 6.
+  Effect amplifiers are the natural granularity, so the tiers land on whole effect levels
+  rather than raw point values; the "touch of saturation efficiency" idea is dropped from D1
+  for simplicity. No attribute hearts - lapsing must never read as losing something owned.
+- **Window expiry: both.** The window is primarily the last `windowSize` meals, and entries
+  also age out after `mealExpiryDays` in-game days (default 3; 0 disables). Count keeps the
+  tuning season-length agnostic; the time cap keeps the bonus describing a *current* diet
+  instead of one frozen by not eating.
+- **Carrot, not stick - confirmed.** Monotony is exactly vanilla; there is no penalty tier.
 - **Preserved food identity.** When the preservation phase lands (pickles, jam, raisins,
   dried mushrooms), preserved items keep their source group tags so winter variety is
   reachable - that is the point of preserving. No separate "preserved" group.

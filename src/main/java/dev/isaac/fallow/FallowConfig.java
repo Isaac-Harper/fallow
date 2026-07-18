@@ -52,6 +52,7 @@ public final class FallowConfig {
     public Events events = new Events();
     public Fruiting fruiting = new Fruiting();
     public Crops crops = new Crops();
+    public Diet diet = new Diet();
 
     /** Tick-budget knobs for the ecology scheduler. */
     public static final class Scheduler {
@@ -864,6 +865,24 @@ public final class FallowConfig {
         }
     }
 
+    /** Diet window and absorption tier config. */
+    public static final class Diet {
+        /** Whether the diet mechanic is active (master switch must also be on). */
+        public boolean enabled = false;
+        /** Rolling window: the last this-many meals are considered. Clamped 4-64. */
+        public int windowSize = 12;
+        /** Meals older than this many in-game days fall off (0 disables time expiry). Clamped 0-64. */
+        public int mealExpiryDays = 3;
+        /** Distinct groups needed for tier-one absorption. Clamped 2-6. */
+        public int tierOneGroups = 4;
+        /** Absorption amplifier for tier one (Absorption I = 0). Clamped 0-4. */
+        public int tierOneAmplifier = 0;
+        /** Absorption amplifier for tier two (all 6 groups, Absorption II = 1). Clamped 0-4. */
+        public int tierTwoAmplifier = 1;
+        /** Send an actionbar note when a new group first enters the window. */
+        public boolean announceNewGroups = true;
+    }
+
     private static Path configPath() {
         return FabricLoader.getInstance().getConfigDir().resolve("fallow.json");
     }
@@ -1050,6 +1069,11 @@ public final class FallowConfig {
         if (crops.cropSeasons != null) {
             crops.cropSeasons.values().forEach(FallowConfig::clampWeights);
         }
+        diet.windowSize = clampInt(diet.windowSize, 4, 64);
+        diet.mealExpiryDays = clampInt(diet.mealExpiryDays, 0, 64);
+        diet.tierOneGroups = clampInt(diet.tierOneGroups, 2, 6);
+        diet.tierOneAmplifier = clampInt(diet.tierOneAmplifier, 0, 4);
+        diet.tierTwoAmplifier = clampInt(diet.tierTwoAmplifier, 0, 4);
     }
 
     /**

@@ -1,17 +1,18 @@
 # Fallow - architecture
 
 Target: Minecraft 26.1.x, Fabric. Gameplay runs on Fabric lifecycle events + vanilla APIs,
-which keeps it compatible and removable. There are **six mixins**: five client-side and purely
+which keeps it compatible and removable. There are **seven mixins**: five client-side and purely
 cosmetic - `BiomeMixin` (seasonal foliage tint; see "Visual seasons"), `FixedFoliageTintMixin`
 (routes the fixed birch/spruce/lily-pad colors through the same seasonal tint), `LeafFallMixin`
 (seasonal falling-leaf particle rate on `LeavesBlock`; see "Seasonal weather..."),
 `CherryLeafParticleMixin` (matches the cherry falling-petal color to the recolored
 autumn/winter canopy), and `RangeSelectItemModelPropertiesMixin` (registers the season_clock's
-`fallow:season` item-model property; see "Items") - and one common gameplay mixin,
+`fallow:season` item-model property; see "Items") - and two common gameplay mixins,
 `BiomeTemperatureMixin` (the seasonal-temperature precipitation lever; see "Seasonal
-precipitation"). The gameplay one is taken only because vanilla exposes no event or setter for a
-per-call biome temperature, and it's a single return-value redirect; the item-model-property one
-because vanilla's property registry is private and Fabric exposes no hook to add to it.
+precipitation") and `LivingEntityEatMixin` (eat detection for the diet mechanic; see "Diet").
+Each gameplay mixin is taken only because no Fabric API hook covers the need: no event or setter
+for per-call biome temperature, no finish-eating event in Fabric API 0.151 (only a use-start
+callback), and the item-model-property registry is private with no Fabric hook.
 
 ```
 Fabric events                 vanilla APIs
@@ -191,7 +192,7 @@ GSON POJO at `config/fallow.json` (Shulker Pocket pattern), **clamped on load** 
 hand edits are corrected, not rejected), live-swapped by `/fallow reload` (read `Fallow.CONFIG`
 fresh, never cache fields). Sections: `scheduler`, `vegetation`, `dieback`, `saplings`, `trails`, `leafLitter`,
 `overcrowding`, `flowerWilt`, `shoreline`, `bamboo`, `seasons`, `dayNight`, `visuals`,
-`precipitation`, `events`, `fruiting`, `crops`. Mod Menu screen (vanilla widgets, no Cloth Config - matching Shulker Pocket) edits
+`precipitation`, `events`, `fruiting`, `crops`, `diet`. Mod Menu screen (vanilla widgets, no Cloth Config - matching Shulker Pocket) edits
 the master switch + per-feature on/off toggles only, kept toggles-only so it stays padded and
 fits any GUI scale; JSON holds everything else (all numeric rates, per-biome maps, per-tree
 types). Singleplayer screen edits apply immediately (same JVM); dedicated servers need
@@ -207,6 +208,8 @@ types). Singleplayer screen edits apply immediately (same JVM); dedicated server
   plus trail stats (windowed: each query resets the window).
 - `/fallow trails reset` *(op)* - clear the current dimension's trail wear map.
 - `/fallow reload` *(op)* - re-read `config/fallow.json` on a live server.
+- `/fallow diet` - print the calling player's current diet window: groups covered, groups
+  missing, meal count, and active tier (requires a player context - not available from console).
 
 ## Public API
 
@@ -653,8 +656,61 @@ instances. Both happen in `Fallow.onInitialize()`.
 **Client render layers.** Not documented here: the rendering for crop blocks was not resolved at
 implementation time. Omit from any player-facing rendering discussion until resolved.
 
+## Diet
+
+The diet mechanic (D1) runs as a lightweight server-side service alongside the ecology
+scheduler, sharing no state with it.
+
+**Eat detection.** `LivingEntityEatMixin` injects at `HEAD` of `LivingEntity.completeUsingItem`.
+This is the seventh mixin and the second common (gameplay) mixin in the codebase. It is a
+deliberate fallback: Fabric API 0.151 ships no finish-eating event - the only exposed hook,
+`UseItemCallback`, fires at use-start before any food is consumed, making it unsuitable for
+recording a completed meal. The `HEAD` inject reads `getUseItem()` before vanilla consumes the
+stack, then exits early for client-side calls and non-player entities.
+
+**Group lookup.** `DietGroup` (an enum of six values: `GRAIN`, `VEGETABLE`, `FRUIT`, `PROTEIN`,
+`FUNGI`, `SUGAR_OIL`) maps each value to its `fallow:diet/<id>` item tag and provides a static
+`groupsOf(stack, level)` method that returns the set of groups the eaten item belongs to. An
+item may belong to multiple groups. Untagged items return an empty set and are silently ignored
+by `DietService.recordMeal` - drinks and other non-food use-items pass through the mixin but
+produce no window entry.
+
+**Window state.** `DietWindow` is a pure Java class (no Minecraft or codec imports): an
+`ArrayList<Meal>` where each `Meal` records a `Set<String>` of group ids and the in-game day.
+`push` appends and trims to `windowSize`; `prune` removes entries whose day is at least
+`mealExpiryDays` behind the current day (0 disables). `distinctGroups` returns the union of all
+group sets currently in the window; `newGroups(previousGroups)` returns the delta for the
+announce-on-first-cover notification. The class is directly unit-testable with no game context.
+
+**Persistence.** `DietData` is a `SavedData` on the overworld (key `fallow:diet`), storing a
+`Map<UUID, DietWindow>` serialized as a string-keyed NBT map. One record covers all players on
+the server. `DietData.get(server)` uses `computeIfAbsent` for lazy creation.
+
+**Effect application.** `DietService` registers on `END_SERVER_TICK`. A `tickCounter` gate lets
+the actual work run every 20 ticks (once per second) rather than every tick. Each pass iterates
+online players, prunes their window for time expiry, then calls `applyEffects`: score >= 6 ->
+`MobEffects.ABSORPTION` at `tierTwoAmplifier` (default 1 = Absorption II, four hearts); score
+>= `tierOneGroups` (default 4) -> Absorption at `tierOneAmplifier` (default 0 = Absorption I,
+two hearts); below tier one, no effect is applied and any existing Absorption decays naturally.
+Effects are given a 35-second duration so they lap the 20-tick refresh comfortably without
+requiring a long-term potion entry in the player's effect list. `applyEffects` is `public` so
+gametests can drive it directly with a known window state without waiting for the poll cycle.
+
+**Announce-on-first-cover.** When `diet.announceNewGroups` is true, `recordMeal` sends a
+`sendOverlayMessage` (actionbar) for each group that entered the window for the first time in
+this push. The lang key is `fallow.diet.group_added`.
+
+**`/fallow diet` command.** `queryDiet` in `FallowCommands` uses `getPlayerOrException` (must
+be called by a player, not from console). It reads the live `DietWindow`, computes covered and
+missing groups against the full `DietGroup` enum set, determines the tier, and sends five
+translatable chat lines via `fallow.diet.status.*` lang keys: header (score/6), covered groups,
+missing groups, tier label, and meal count.
+
+**No client sync.** The diet window and score are server-authoritative. The `/fallow diet`
+command output reaches the player over normal chat packets; no dedicated S2C payload is
+needed. Absorption is a standard potion effect and syncs via vanilla's effect-update packet.
+
 ## Future work (explicitly out of v1)
 
 - Snowy-biome summer thaw tuning; masting (irregular bumper seed years for oaks/pale_oak) - noted.
-- Crops: preservation layer (pickled cucumber, jam, raisins, dried mushrooms) and the diet
-  mechanic that consumes the `fallow:diet/*` tags - see docs/crops.md for phasing.
+- Crops: preservation layer (pickled cucumber, jam, raisins, dried mushrooms) - D2, see docs/diet.md for phasing.

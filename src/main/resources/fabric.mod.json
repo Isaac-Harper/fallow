@@ -26,7 +26,8 @@
       "dev.isaac.fallow.client.ModMenuIntegration"
     ],
     "fabric-gametest": [
-      "dev.isaac.fallow.gametest.CropGameTests"
+      "dev.isaac.fallow.gametest.CropGameTests",
+      "dev.isaac.fallow.gametest.DietGameTests"
     ]
   },
   "mixins": [

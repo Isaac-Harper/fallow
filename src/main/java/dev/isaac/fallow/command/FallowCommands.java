@@ -6,6 +6,9 @@ import com.mojang.brigadier.context.CommandContext;
 import dev.isaac.fallow.Fallow;
 import dev.isaac.fallow.api.FallowSeasons;
 import dev.isaac.fallow.api.Season;
+import dev.isaac.fallow.diet.DietData;
+import dev.isaac.fallow.diet.DietGroup;
+import dev.isaac.fallow.diet.DietWindow;
 import dev.isaac.fallow.ecology.EcologyScheduler;
 import dev.isaac.fallow.season.SeasonService;
 import dev.isaac.fallow.season.SeasonState;
@@ -15,6 +18,12 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * {@code /fallow season} - query the season; {@code set} is op-only (for admins and testing).
@@ -49,7 +58,9 @@ public final class FallowCommands {
                         .executes(FallowCommands::resetTrails)))
                 .then(Commands.literal("reload")
                     .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
-                    .executes(FallowCommands::reload))));
+                    .executes(FallowCommands::reload))
+                .then(Commands.literal("diet")
+                    .executes(FallowCommands::queryDiet))));
     }
 
     private static int querySeason(CommandContext<CommandSourceStack> c) {
@@ -109,6 +120,49 @@ public final class FallowCommands {
     private static int reload(CommandContext<CommandSourceStack> c) {
         Fallow.reload(c.getSource().getServer());
         c.getSource().sendSuccess(() -> Component.literal("Fallow config reloaded"), true);
+        return 1;
+    }
+
+    private static int queryDiet(CommandContext<CommandSourceStack> c) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        CommandSourceStack source = c.getSource();
+        ServerPlayer player = source.getPlayerOrException();
+        DietData data = DietData.get(source.getServer());
+        DietWindow window = data.windowFor(player.getUUID());
+
+        Set<String> covered = window.distinctGroups();
+        Set<String> allGroups = Arrays.stream(DietGroup.values())
+            .map(DietGroup::id)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+        Set<String> missing = new LinkedHashSet<>(allGroups);
+        missing.removeAll(covered);
+
+        int score = covered.size();
+        int tier;
+        if (score >= 6) {
+            tier = 2;
+        } else if (score >= Fallow.CONFIG.diet.tierOneGroups) {
+            tier = 1;
+        } else {
+            tier = 0;
+        }
+
+        String coveredStr = covered.isEmpty() ? "-" : String.join(", ", covered);
+        String missingStr = missing.isEmpty() ? "-" : String.join(", ", missing);
+        Component tierLabel = tier == 2
+            ? Component.translatable("fallow.diet.tier.two")
+            : tier == 1
+                ? Component.translatable("fallow.diet.tier.one")
+                : Component.translatable("fallow.diet.tier.none");
+
+        source.sendSuccess(() -> Component.translatable("fallow.diet.status.header",
+            String.valueOf(score), String.valueOf(6)), false);
+        source.sendSuccess(() -> Component.translatable("fallow.diet.status.covered",
+            Component.literal(coveredStr)), false);
+        source.sendSuccess(() -> Component.translatable("fallow.diet.status.missing",
+            Component.literal(missingStr)), false);
+        source.sendSuccess(() -> Component.translatable("fallow.diet.status.tier", tierLabel), false);
+        source.sendSuccess(() -> Component.translatable("fallow.diet.status.meals",
+            String.valueOf(window.mealCount())), false);
         return 1;
     }
 }

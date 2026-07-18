@@ -20,7 +20,7 @@ tables survive the typo) and defaults are written in its place, with a log warni
 Top-level fields: `enabled` (the master switch, below), then the objects `scheduler`,
 `vegetation`, `dieback`, `saplings`, `trails`, `leafLitter`, `overcrowding`, `flowerWilt`,
 `shoreline`, `bamboo`, `seasons`, `dayNight`, `visuals`, `precipitation`, `events`, `fruiting`,
-`crops`.
+`crops`, `diet`.
 
 ---
 
@@ -485,5 +485,24 @@ when `crops.enabled` is false.
 - **Lusher meadows in a biome:** raise its `vegetation.biomeGrowth` / `biomeDensity` entry.
 - **Turn the whole simulation off:** `scheduler.enabled = false` stops every visit-based
   task; set `trails.enabled = false` and `seasons.enabled = false` for the rest.
+
+## diet - rolling meal window and absorption tiers
+
+Gated by the master `enabled` switch. Off by default. No block changes: disabling or removing
+the module leaves the player in a plain vanilla state. All fields except `enabled` are re-read
+on `/fallow reload`.
+
+| field | default | range | meaning |
+|---|---|---|---|
+| `enabled` | `false` | bool | Whether the diet mechanic is active (master `enabled` must also be `true`). Off by default. |
+| `windowSize` | `12` | 4-64 | The rolling window keeps this many recent meals. The oldest is dropped when a new one pushes past the cap. |
+| `mealExpiryDays` | `3` | 0-64 | Meals older than this many in-game days are pruned (0 disables time-based expiry; only the meal count limit applies). |
+| `tierOneGroups` | `4` | 2-6 | Distinct groups needed to reach tier-one absorption. |
+| `tierOneAmplifier` | `0` | 0-4 | Absorption effect amplifier for tier one (amplifier 0 = Absorption I, two extra hearts). |
+| `tierTwoAmplifier` | `1` | 0-4 | Absorption effect amplifier for tier two (all six groups; amplifier 1 = Absorption II, four extra hearts). |
+| `announceNewGroups` | `true` | bool | Send a brief actionbar note ("Fruit joins your diet") when a new group first enters the window. |
+
+Untagged food items and drinks are ignored by the window; they neither help nor harm the score.
+Use `/fallow diet` to inspect the current window, covered groups, missing groups, and active tier.
 
 See [architecture.md](architecture.md) for how each system works internally.

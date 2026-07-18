@@ -51,12 +51,13 @@ vanish if the mod is removed. So:
 - **Server-side gameplay, mixins held to a "no other hook exists" bar.** All simulation is
   Fabric lifecycle events + vanilla APIs. Day length uses the vanilla 26.1 world-clock rate (the
   `/time set rate` mechanism), so it's multiplayer-safe with native client sync, and beds and
-  `/time set` just work. One gameplay mixin exists (the seasonal-temperature lever that makes
-  vanilla snow in winter and rain in summer); the other five are client-side cosmetics for the
-  seasonal tints, particles, and the Season Clock's dial.
+  `/time set` just work. Two gameplay mixins exist (the seasonal-temperature lever and the
+  eat-detection hook for the diet mechanic, both taken because Fabric API offers no equivalent
+  event); the other five are client-side cosmetics for the seasonal tints, particles, and the
+  Season Clock's dial.
 - **Existing worlds welcome.** No new blocks, no world reset. The entire persistent footprint
-  is two small saved-data records (season state + per-dimension trail wear); remove the mod
-  and nothing breaks.
+  is a handful of small saved-data records (season state, trail wear per dimension, first-join
+  notice flags, and diet windows); remove the mod and nothing breaks.
 - **Client optional.** A vanilla client on a Fallow server plays fine; install the mod
   client-side for the seasonal foliage tint and the Mod Menu config screen.
 - **Configurable.** `config/fallow.json` (every knob - see
@@ -95,6 +96,11 @@ by biome:
   and 11 wild forage plants spreading via the ecology scheduler. 15 seeds drop from breaking
   grass. Note: planted crop blocks are real new blocks and do not uninstall cleanly if the mod is
   removed - see the warning in [docs/features.md](docs/features.md).
+- **Diet** (opt-in, `diet.enabled`, off by default) - eating across the six food groups (grain,
+  vegetable, fruit, protein, fungi, sugar & oil) earns refreshed Absorption hearts: two at four
+  or more groups, four at all six. Monotony is exactly vanilla, never a penalty. Uses a rolling
+  window of your last twelve meals with time expiry. Pure effects and saved data, no new blocks,
+  removes cleanly.
 
 ## Commands
 
@@ -102,6 +108,7 @@ by biome:
 - `/fallow season set <season> [day]` (op) - for testing and admins
 - `/fallow stats` - ecology scheduler timings and placement counts since last query
 - `/fallow trails reset` (op) - clear this dimension's trail wear
+- `/fallow diet` - your current diet window: groups covered and missing, active tier, meal count
 - `/fallow reload` (op) - re-read the JSON config
 
 ## API
