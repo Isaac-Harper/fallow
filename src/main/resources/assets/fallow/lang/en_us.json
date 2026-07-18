@@ -43,5 +43,25 @@
   "fallow.config.summer_day.tooltip": "Share of the cycle that is daylight at midsummer. 50% = vanilla.",
   "fallow.config.winter_day": "Winter Daylight: %s%%",
   "fallow.config.winter_day.tooltip": "Share of the cycle that is daylight at midwinter. 50% = vanilla.",
-  "fallow.config.reset": "Reset to Defaults"
+  "fallow.config.reset": "Reset to Defaults",
+
+  "block.fallow.turnip_crop": "Turnips",
+  "block.fallow.cabbage_crop": "Cabbages",
+  "block.fallow.onion_crop": "Onions",
+  "block.fallow.strawberry_bush": "Strawberry Bush",
+  "block.fallow.pea_crop": "Pea Vines",
+  "block.fallow.wild_onion": "Wild Onion",
+  "block.fallow.withered_crop": "Withered Crop",
+  "block.fallow.trellis": "Trellis",
+
+  "item.fallow.turnip": "Turnip",
+  "item.fallow.turnip_seeds": "Turnip Seeds",
+  "item.fallow.cabbage": "Cabbage",
+  "item.fallow.cabbage_seeds": "Cabbage Seeds",
+  "item.fallow.onion": "Onion",
+  "item.fallow.cherries": "Cherries",
+  "item.fallow.strawberries": "Strawberries",
+  "item.fallow.peas": "Peas",
+  "item.fallow.pea_seeds": "Pea Seeds",
+  "item.fallow.trellis": "Trellis"
 }

@@ -2,7 +2,7 @@
 # section overrides for that Minecraft build. Single node for now; add sections to backport
 # (same path Shulker Pocket took). See https://stonecutter.kikugie.dev/wiki/config/properties
 mod.id = "fallow"
-mod.version = "0.2.0"
+mod.version = "0.3.0"
 mod.modrinth_id = "ThAcHX0B"
 
 deps.fabric_loader = "0.19.3"

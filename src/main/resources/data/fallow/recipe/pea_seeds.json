@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "fallow:peas"
+  ],
+  "result": {
+    "id": "fallow:pea_seeds",
+    "count": 1
+  }
+}

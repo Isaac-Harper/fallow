@@ -51,6 +51,7 @@ public final class FallowConfig {
     public Precipitation precipitation = new Precipitation();
     public Events events = new Events();
     public Fruiting fruiting = new Fruiting();
+    public Crops crops = new Crops();
 
     /** Tick-budget knobs for the ecology scheduler. */
     public static final class Scheduler {
@@ -722,7 +723,93 @@ public final class FallowConfig {
             Map<String, FruitType> map = new LinkedHashMap<>();
             map.put("minecraft:oak_leaves", new FruitType("minecraft:apple", "autumn", 0.01));
             map.put("minecraft:dark_oak_leaves", new FruitType("minecraft:apple", "autumn", 0.01));
+            // Cherry leaves drop fallow:cherries in spring - only active when the crop layer is on.
+            map.put("minecraft:cherry_leaves", new FruitType("fallow:cherries", "spring", 0.01));
             return map;
+        }
+    }
+
+    /**
+     * Phase C1 crop layer: real fallow:* blocks placed in the world. Ships disabled because
+     * planted blocks persist across uninstall; see {@link #removalNote}.
+     */
+    public static final class Crops {
+        /**
+         * Crops place real fallow:* blocks in the world; unlike the rest of Fallow they do not
+         * uninstall cleanly once planted.
+         */
+        public String removalNote = "Crops place real fallow:* blocks in the world; unlike the "
+            + "rest of Fallow they do not uninstall cleanly once planted.";
+
+        /** Master switch for the crop layer. Off by default (same reason as Fallow.enabled). */
+        public boolean enabled = false;
+        /** When true, per-crop season weights gate random-tick growth. */
+        public boolean seasonGating = true;
+        /** When true, crops in WINTER with weight &lt;=0 are replaced by a dead husk. */
+        public boolean winterKill = true;
+        /** Chance per short/tall grass break to drop one of the crop seeds. */
+        public double seedDropChance = 0.05;
+
+        /**
+         * Per-crop seasonal spread weights, keyed by block id. The four values are
+         * {spring, summer, autumn, winter}. Missing entries default to 1.0 in all seasons
+         * (grow normally). See {@link #cropSeasonWeight}.
+         */
+        public Map<String, SeasonWeights> cropSeasons = defaultCropSeasons();
+
+        /**
+         * This crop's growth multiplier for {@code season}: its own schedule when configured,
+         * 1.0 when absent. Pure logic; unit-testable.
+         */
+        public double cropSeasonWeight(String blockId, dev.isaac.fallow.api.Season season) {
+            SeasonWeights w = cropSeasons == null ? null : cropSeasons.get(blockId);
+            return w != null ? w.weight(season) : 1.0;
+        }
+
+        private static Map<String, SeasonWeights> defaultCropSeasons() {
+            Map<String, SeasonWeights> map = new LinkedHashMap<>();
+            map.put("fallow:turnip_crop",     new SeasonWeights(0.6, 0.8, 1.0, 0.25));
+            map.put("fallow:cabbage_crop",    new SeasonWeights(1.0, 0.3, 1.0, 0.0));
+            map.put("fallow:onion_crop",      new SeasonWeights(1.0, 0.7, 1.0, 0.0));
+            map.put("fallow:strawberry_bush", new SeasonWeights(1.0, 0.5, 0.2, 0.0));
+            map.put("fallow:pea_crop",        new SeasonWeights(1.0, 0.6, 0.3, 0.0));
+            return map;
+        }
+
+        /** Wild forage plants placed by the forage spread task. */
+        public Wild wild = new Wild();
+
+        /** Legume nitrogen-fixing behaviour. */
+        public Legumes legumes = new Legumes();
+
+        public static final class Wild {
+            public boolean enabled = true;
+            /** Chance per sampled candidate column that a wild plant spreads. */
+            public double forageChance = 0.004;
+            /**
+             * Biome homes for each wild plant: list of biome ids or biome tags ("#tag") where
+             * the plant may appear. Absent entries are never placed.
+             */
+            public Map<String, List<String>> homes = defaultHomes();
+
+            private static Map<String, List<String>> defaultHomes() {
+                Map<String, List<String>> map = new LinkedHashMap<>();
+                map.put("fallow:wild_onion",
+                    List.of("#minecraft:is_forest"));
+                map.put("fallow:strawberry_bush",
+                    List.of("minecraft:meadow", "minecraft:plains", "#minecraft:is_forest"));
+                return map;
+            }
+        }
+
+        public static final class Legumes {
+            /** When true, pea crops convert one coarse/rooted dirt block to dirt on harvest. */
+            public boolean fixNitrogen = true;
+            /**
+             * Horizontal radius of the nitrogen-fix scan around the pea's ground block
+             * (y-1..0). Clamped 0-4.
+             */
+            public int fixRadius = 1;
         }
     }
 
@@ -904,6 +991,12 @@ public final class FallowConfig {
         }
         if (precipitation.snowDepth != null) {
             precipitation.snowDepth.replaceAll((k, v) -> Math.max(1.0, Math.min(8.0, v)));
+        }
+        crops.seedDropChance = clampChance(crops.seedDropChance);
+        crops.legumes.fixRadius = clampInt(crops.legumes.fixRadius, 0, 4);
+        crops.wild.forageChance = clampChance(crops.wild.forageChance);
+        if (crops.cropSeasons != null) {
+            crops.cropSeasons.values().forEach(FallowConfig::clampWeights);
         }
     }
 

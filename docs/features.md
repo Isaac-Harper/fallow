@@ -131,6 +131,69 @@ This is the plain-language tour of *what* Fallow does. For knobs and defaults se
   - **Plain bushes** in **spring**.
 - **Dead bushes stay dead** - dead bushes never spread or multiply; they're not alive.
 
+## Crops & forage
+
+The crop layer is a second opt-in on top of the master switch: set `crops.enabled` to `true` in
+`config/fallow.json` (default `false`). With it off no wild plants appear, no crop blocks are
+placed, and the ecology sim stays exactly as it is. With it on:
+
+- **Tier 1 roster** - six plants, each tied to a season:
+  - **Turnip** (autumn) - planted from turnip seeds on farmland; cold-hardy so it keeps trickling
+    through winter at a reduced rate instead of dying.
+  - **Cabbage** (spring and autumn, stalls in summer heat and winter) - planted from cabbage seeds.
+  - **Onion** (spring-planted, autumn harvest) - carrot-style: the onion food item itself is the
+    planter; right-clicking farmland with an onion plants the crop, and the mature plant drops
+    more onions.
+  - **Cherry** (spring) - no new growth block at all; the existing fruiting system that drops
+    apples under oak canopy in autumn already handles it. One new entry in `fruiting.types`
+    (`minecraft:cherry_leaves` -> `fallow:cherries`, spring) makes cherry grove trees drop
+    cherries beneath their canopy in spring, exactly the way oaks drop apples in autumn.
+  - **Strawberry** (spring) - a berry-bush-style plant; right-click to harvest ripe berries, no
+    contact thorns. The strawberry item itself plants the bush (same idiom as sweet berries).
+  - **Peas** (spring) - the most mechanically distinct crop; see Trellis and Nitrogen fixing below.
+
+- **How seeds are obtained** - turnip seeds, cabbage seeds, and pea seeds drop occasionally from
+  breaking short or tall grass (gated by `crops.enabled`, default 5 % chance per break).
+  Wild onions appear on their own in forests via the forage spread engine (see below) and yield
+  seeds when broken. Strawberry bushes also appear wild in meadows, plains, and forests.
+
+- **Season-gated growth** - crops grow on the vanilla random tick but each has its own seasonal
+  weight. A crop planted out of season stalls instead of growing; all the seasonal tuning lives
+  in the `crops.cropSeasons` config map.
+
+- **Winter kill** - when winter arrives, any standing crop whose seasonal weight drops to zero
+  withers into a dead, unharvestable `fallow:withered_crop` block on its next random tick. Saving
+  seed in a chest before the season turns is the intended counter. Turnip is the one crop that
+  keeps going (weight 0.25 in winter, so it trickles). Strawberry bushes are the other exception:
+  they stall in winter but do not die. Pea vines die back to the bare trellis rather than a
+  withered husk. Toggle with `crops.winterKill` (default `true`).
+
+- **Trellis** - a crafted lattice block (four sticks in an X pattern, yields two), placed on
+  dirt-family ground or farmland. Right-clicking it with pea seeds plants the pea vine at age 0.
+  When winter-kill fires, the vine reverts to a bare trellis rather than a dead husk, so the
+  structure stays in place.
+
+- **Pea nitrogen fixing** - when a pea vine reaches maturity or is harvested, the soil around it
+  improves: one coarse dirt or rooted dirt block within `crops.legumes.fixRadius` (default 1
+  block) converts back to plain dirt. Toggle with `crops.legumes.fixNitrogen` (default `true`).
+
+- **Wild forage** - the `ForageSpreadTask` places wild plants via the ecology scheduler: wild
+  onions appear in forests, strawberry bushes in meadows, plains, and forests. Wild spread rides
+  the shared seasonal curve (slowing in winter with the rest of the ecosystem), unlike
+  player-planted crops which use their own per-crop weights. Biome homes are config-overridable
+  via `crops.wild.homes`.
+
+- **Diet item tags** - six tags (`fallow:diet/grain`, `/vegetable`, `/fruit`, `/protein`,
+  `/fungi`, `/sugar_oil`) are shipped with their current vanilla and Fallow-crop members. They
+  are data-driven hooks for a future diet mechanic; the mechanic itself is not yet implemented.
+
+**Uninstall warning.** Unlike everything else in Fallow, placed crop blocks are real new blocks
+(`fallow:turnip_crop`, `fallow:pea_crop`, etc.). If the mod is removed after crops have been
+planted, those blocks become unknown blocks in the world - they do not vanish cleanly. Ecology
+edits (grass, flowers, trails, trees) are reversible; planted crops are not. This is normal for
+any content mod but it contradicts Fallow's usual "removes cleanly" promise, which is why the
+crop layer is a separate opt-in.
+
 ## Forest floor & ground cover
 
 - **Leaf litter builds up** - under dense tree canopy, the ground slowly turns to podzol and
@@ -215,7 +278,9 @@ This is the plain-language tour of *what* Fallow does. For knobs and defaults se
 - **Datapack- and mod-friendly** - respects custom biomes and their flowers, and handles modded
   trees automatically.
 - **Safe to add or remove** - Fallow only uses the game's own systems and saved data, so adding
-  or removing it won't corrupt a world; left-over effects clear themselves.
+  or removing it won't corrupt a world; left-over effects clear themselves. **Exception:** if the
+  opt-in crop layer (`crops.enabled`) has been used, planted crop blocks become unknown blocks
+  on uninstall - see the [Crops & forage](#crops--forage) section.
 - **Vanilla when neutral** - out of season, with a feature disabled, or without the mod on the
   client, the relevant behavior is exactly vanilla.
 

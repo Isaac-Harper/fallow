@@ -2,10 +2,12 @@ package dev.isaac.fallow;
 
 import dev.isaac.fallow.biome.BiomeTuning;
 import dev.isaac.fallow.command.FallowCommands;
+import dev.isaac.fallow.block.FallowBlocks;
 import dev.isaac.fallow.ecology.BambooSpreadTask;
 import dev.isaac.fallow.ecology.DiebackTask;
 import dev.isaac.fallow.ecology.EcologyScheduler;
 import dev.isaac.fallow.ecology.FlowerWiltTask;
+import dev.isaac.fallow.ecology.ForageSpreadTask;
 import dev.isaac.fallow.ecology.FruitDropTask;
 import dev.isaac.fallow.ecology.LeafLitterTask;
 import dev.isaac.fallow.ecology.OvercrowdingTask;
@@ -18,6 +20,8 @@ import dev.isaac.fallow.growth.ConfigGrowthRates;
 import dev.isaac.fallow.growth.GrowthRateProvider;
 import dev.isaac.fallow.growth.SeasonalGrowthRates;
 import dev.isaac.fallow.item.FallowItems;
+import dev.isaac.fallow.loot.CropsEnabledCondition;
+import dev.isaac.fallow.loot.GrassSeedDrops;
 import dev.isaac.fallow.network.SeasonSyncPayload;
 import dev.isaac.fallow.notice.FirstJoinNotice;
 import dev.isaac.fallow.season.PrecipitationBiomes;
@@ -75,7 +79,11 @@ public class Fallow implements ModInitializer {
 
         PayloadTypeRegistry.clientboundPlay().register(SeasonSyncPayload.ID, SeasonSyncPayload.CODEC);
 
-        FallowItems.register(); // the season_clock item + its creative-tab entry
+        FallowBlocks.register(); // must precede FallowItems (block items reference block instances)
+        FallowItems.register(); // the season_clock item + crop layer items + creative-tab entries
+
+        CropsEnabledCondition.register(); // loot condition codec, before loot table modification
+        GrassSeedDrops.register();        // inject seed-drop pool into grass loot tables
 
         SeasonEventService.register(); // before SeasonService: sets the heatwave temp bonus first
         SeasonService.register();
@@ -92,6 +100,7 @@ public class Fallow implements ModInitializer {
         EcologyScheduler.registerTask(new FlowerWiltTask(GROWTH_RATES));
         EcologyScheduler.registerTask(new PrecipitationTask());
         EcologyScheduler.registerTask(new FruitDropTask(GROWTH_RATES));
+        EcologyScheduler.registerTask(new ForageSpreadTask(GROWTH_RATES));
         TrailSystem.register();
         FallowCommands.register();
         FirstJoinNotice.register(); // one-time "this mod changes blocks" notice, shown even when disabled

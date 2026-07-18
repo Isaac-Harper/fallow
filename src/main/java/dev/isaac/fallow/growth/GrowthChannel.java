@@ -19,6 +19,12 @@ public enum GrowthChannel {
      * season and per-type chance, applied in {@code FruitDropTask}; the provider stack contributes
      * the biome growth and heatwave scaling on top. */
     FRUIT(Kind.GROWTH),
+    /**
+     * Forage wild-plant spread (wild onion, wild strawberry bush). Follows the shared seasonal
+     * curve - wild spread's season term is the curve itself, so FORAGE is NOT in the PER_SPECIES
+     * exempt set in {@link SeasonalGrowthRates}.
+     */
+    FORAGE(Kind.GROWTH),
     DIEBACK(Kind.DECAY),
     /** Forest floors build up in autumn/winter, hence a decay channel. */
     LEAF_LITTER(Kind.DECAY),

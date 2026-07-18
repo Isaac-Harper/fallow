@@ -100,6 +100,11 @@ public final class FruitDropTask implements EcologyTask {
             if (type == null) {
                 continue;
             }
+            // Items in the fallow namespace require the crop layer to be enabled: if someone has
+            // the fruiting entry configured but crops are off, the item doesn't exist in gameplay.
+            if (type.item != null && type.item.startsWith("fallow:") && !Fallow.CONFIG.crops.enabled) {
+                continue;
+            }
             // Per-type season gate (an unknown season string is nulled with a warning at config
             // load). With seasons disabled the clock is frozen, so every type is in season.
             if (Fallow.CONFIG.seasons.enabled) {

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "fallow:turnip"
+  ],
+  "result": {
+    "id": "fallow:turnip_seeds",
+    "count": 1
+  }
+}

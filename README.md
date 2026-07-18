@@ -35,8 +35,10 @@ microseconds per tick at defaults, with hard caps no matter the config.
 Fallow is a slow, world-altering mod. While chunks are loaded it permanently edits vanilla
 blocks over time: grass and flowers spread, dirt paths wear into the ground underfoot, trees
 and bamboo spread, snow accumulates and melts, water freezes and thaws, and plants left in the
-dark decay toward dirt. It adds no new blocks and leaves no trace if removed, but the changes it
-makes to existing blocks are permanent and can be considered destructive. So:
+dark decay toward dirt. The base mod adds no new blocks and leaves no trace if removed, but the
+changes it makes to existing blocks are permanent and can be considered destructive. The optional
+crop layer (`crops.enabled`) is an exception: planted crop blocks are real new blocks that do not
+vanish if the mod is removed. So:
 
 - **Fallow ships DISABLED by default.** Nothing in your world changes until you turn it on.
 - **Back up any world you care about before enabling it.**
@@ -86,6 +88,13 @@ by biome:
 - **Season Clock** (item) - a copper-and-redstone clock that shows the current season instead of
   the time of day: four pips at the compass points with a redstone hand that sweeps round to the
   active season. Crafted like a clock but with copper.
+- **Crops & forage** (opt-in, `crops.enabled`, off by default) - a Tier 1 roster of six
+  season-native plants: turnip (autumn, cold-hardy), cabbage (spring/autumn), onion (spring),
+  cherry (spring fruit drops beneath the canopy, no new growth block), strawberry (spring bush,
+  right-click harvest), and peas (spring, trellis climber with nitrogen-fixing soil enrichment).
+  Wild onions and strawberry bushes appear on their own via the ecology scheduler. Seeds drop
+  from breaking grass. Note: planted crop blocks are real new blocks and do not uninstall cleanly
+  if the mod is removed - see the warning in [docs/features.md](docs/features.md).
 
 ## Commands
 

@@ -19,7 +19,8 @@ tables survive the typo) and defaults are written in its place, with a log warni
 
 Top-level fields: `enabled` (the master switch, below), then the objects `scheduler`,
 `vegetation`, `dieback`, `saplings`, `trails`, `leafLitter`, `overcrowding`, `flowerWilt`,
-`shoreline`, `bamboo`, `seasons`, `dayNight`, `visuals`, `precipitation`, `events`, `fruiting`.
+`shoreline`, `bamboo`, `seasons`, `dayNight`, `visuals`, `precipitation`, `events`, `fruiting`,
+`crops`.
 
 ---
 
@@ -364,9 +365,13 @@ its season.
 
 **`types` defaults:** `minecraft:oak_leaves` and `minecraft:dark_oak_leaves` -> `minecraft:apple`,
 season `autumn`, chance `0.01` (vanilla's only tree fruit; the map is open for modded items).
+Also `minecraft:cherry_leaves` -> `fallow:cherries`, season `spring`, chance `0.01`: cherry grove
+trees drop cherries beneath their canopy in spring, the same way oaks drop apples in autumn.
 `chance` is further scaled by the biome growth multiplier and stalled by a heatwave, like every
 growth channel. An entry's `season` must be `spring`/`summer`/`autumn`/`winter`; anything else is
-nulled with a log warning and means every season, as does disabling seasons entirely.
+nulled with a log warning and means every season, as does disabling seasons entirely. Entries
+whose `item` starts with `fallow:` are additionally gated by `crops.enabled`: they are silently
+skipped when the crop layer is off (the items don't exist in gameplay without it).
 
 Two more `vegetation` knobs (alongside `biomeDensity`/`biomeGrowth`/`biomeSeasonality`):
 **`biomeSeasonPhase`** (id/tag -> 0-3) shifts which season a biome's growth peaks in - default
@@ -374,6 +379,61 @@ Two more `vegetation` knobs (alongside `biomeDensity`/`biomeGrowth`/`biomeSeason
 biases flower selection toward in-season flowers the biome already offers. And `leafLitter` gains
 **`springFall`/`summerFall`/`autumnFall`/`winterFall`** (default `0.4/0.3/1.5/0.5`) - the
 autumn-peaked curve driving both litter accumulation and the client falling-leaf particle rate.
+
+## crops - Phase C1 crop and forage layer
+
+A second opt-in on top of the master switch. All fields except `removalNote` are re-read on
+`/fallow reload`. When `crops.enabled` is `false` no wild crops spread, the forage task does not
+tick, and `fallow:`-prefixed `fruiting.types` entries are skipped - but all fallow crop blocks
+and items are still registered so existing worlds do not corrupt.
+
+| field | default | range | meaning |
+|---|---|---|---|
+| `removalNote` | see below | string | Informational notice (not functional). Reminds operators that planted crop blocks are real `fallow:*` blocks that become unknown blocks if the mod is removed, unlike the rest of Fallow. |
+| `enabled` | `false` | bool | Master switch for the crop layer. Off by default for the same reason Fallow itself is off by default: planted blocks persist. |
+| `seasonGating` | `true` | bool | When true, each crop's random-tick growth is scaled by its per-season weight from `cropSeasons`. When false, crops grow at vanilla speed regardless of season. |
+| `winterKill` | `true` | bool | When true, a standing crop whose `cropSeasons` winter weight is <= 0 withers to `fallow:withered_crop` on its next random tick. Turnip (winter weight 0.25) is not affected. Pea vines revert to a bare trellis instead of a withered husk. Strawberry bushes stall in winter regardless of this flag (they never die). |
+| `seedDropChance` | `0.05` | 0-1 | Chance per short/tall grass break to drop one of turnip seeds, cabbage seeds, or pea seeds (equal weight, gated by `fallow:crops_enabled` loot condition). |
+
+### crops.cropSeasons - per-crop seasonal growth weights
+
+The four values `{spring, summer, autumn, winter}` set how strongly that crop grows in each
+season; 1.0 means normal vanilla-rate growth, 0.0 stalls it entirely. The weights used as a
+probability gate on the random tick: a weight of 0.5 means roughly half the ticks that would
+normally trigger growth are skipped. Missing crop entries default to 1.0 in all seasons.
+
+| crop block id | spring | summer | autumn | winter |
+|---|--:|--:|--:|--:|
+| `fallow:turnip_crop` | 0.6 | 0.8 | 1.0 | 0.25 |
+| `fallow:cabbage_crop` | 1.0 | 0.3 | 1.0 | 0.0 |
+| `fallow:onion_crop` | 1.0 | 0.7 | 1.0 | 0.0 |
+| `fallow:strawberry_bush` | 1.0 | 0.5 | 0.2 | 0.0 |
+| `fallow:pea_crop` | 1.0 | 0.6 | 0.3 | 0.0 |
+
+Note: `minecraft:cherry_leaves` fruiting is handled via the `fruiting.types` map, not here.
+
+### crops.wild - wild forage spread
+
+Controls the `ForageSpreadTask` that places wild plants in biome-appropriate locations via
+the ecology scheduler. The task is a standard growth-channel task: it follows the shared
+seasonal curve (slowing in winter) and the biome growth multiplier. It is disabled entirely
+when `crops.enabled` is false.
+
+| field | default | range | meaning |
+|---|---|---|---|
+| `enabled` | `true` | bool | Toggle the forage spread task (still requires `crops.enabled`). |
+| `forageChance` | `0.004` | 0-1 | Chance per sampled candidate column that a wild plant spreads. Further scaled by season and biome via the FORAGE channel. |
+| `homes` | see below | plant id -> list | Biome home list for each wild plant: entries are exact biome ids (`minecraft:meadow`) or biome tags (`#minecraft:is_forest`). A plant is only placed when the candidate biome matches at least one entry. |
+
+**`homes` defaults:** `fallow:wild_onion` -> `["#minecraft:is_forest"]`;
+`fallow:strawberry_bush` -> `["minecraft:meadow", "minecraft:plains", "#minecraft:is_forest"]`.
+
+### crops.legumes - nitrogen fixing
+
+| field | default | range | meaning |
+|---|---|---|---|
+| `fixNitrogen` | `true` | bool | When true, pea vines convert one coarse dirt or rooted dirt block to plain dirt on reaching maturity (age 3) or on right-click harvest. |
+| `fixRadius` | `1` | 0-4 | Horizontal radius of the nitrogen-fix scan around the pea's ground block (the block directly below the crop). One randomly chosen candidate in the box is converted per trigger. |
 
 ## Quick recipes
 
