@@ -14,7 +14,7 @@ roster is shipped and live behind `crops.enabled` (default `false`):
   thyme, ramsons, sorrel, plus existing wild onion and strawberry bush).
 
 Still future: the preservation layer (pickled cucumber, jam, raisins, dried mushrooms) and the
-diet mechanic that consumes the `fallow:diet/*` tags.
+diet mechanic that consumes the `fallow:diet/*` tags - now scoped in [diet.md](diet.md).
 
 The document below is the design record as written; see [features.md](features.md) for the
 plain-language tour and [configuration.md](configuration.md) for the full config reference.
