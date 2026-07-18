@@ -1,9 +1,13 @@
 # Fallow - crops (design proposal)
 
-Status: **design, not built.** This document scopes a crop-and-forage layer for Fallow. It is
-written to fit the systems that already exist (the `EcologyScheduler`, the `Season` API,
-`BiomeTuning`, and the JSON config), and to feed a future **diet** feature without requiring it.
-Nothing here ships until it is implemented behind its own config module.
+Status: **Phase C1 implemented** (2026-07-18). The Tier 1 crop roster (turnip, cabbage, onion,
+cherry, strawberry, peas), the trellis block, `ForageSpreadTask`, season-gated farmland growth
+with winter kill, legume nitrogen fixing, and the `diet/*` item tags are all shipped and live
+behind `crops.enabled` (default `false`). Phases C2 and C3 remain design only.
+
+The document below is the design record as written; see [features.md](features.md) for the
+plain-language tour and [configuration.md](configuration.md) for the full config reference.
+The open questions this proposal shipped with are resolved ([section 10](#10-decisions), 2026-07-18).
 
 Fallow today adds no blocks (only the `season_clock` item) and leaves no trace if removed. Crops
 break that promise: they are the first real *content* Fallow ships. That is a deliberate shift, so
@@ -48,8 +52,10 @@ them.
 **The removability caveat.** Ecology edits are reversible: pull Fallow and the world is vanilla
 blocks. Crop blocks are not: a planted turnip is a `fallow:turnip` block that becomes "unknown" if
 the mod is removed. This is normal for any content mod, but it must be stated plainly in
-`features.md` because it contradicts Fallow's current selling point. Recommendation: ship crops as a
-clearly-labeled optional layer, not as part of the default ecology promise.
+`features.md` because it contradicts Fallow's current selling point. Decided: crops are simply part
+of the mod, not a separately-advertised add-on, and there is no second first-join notice (the
+existing one-time notice already covers Fallow altering the world). The caveat lives in a dedicated
+`features.md` note and a comment beside `crops.enabled` in the config.
 
 **Two growth paths, on purpose.** Fallow's engine is built for *ambient, unattended* world change.
 Player farming is the opposite: deliberate and predictable. So crops use both mechanisms, each
@@ -93,12 +99,14 @@ feature. Seasons come from `FallowSeasons.season(server)`; each crop declares a 
 | **Spring** | peas, leafy greens, radish, strawberry, cherry (bloom sets fruit) | fresh, fast, early |
 | **Summer** | rice, maize, tomato, beans, cucumber, pepper | warm-season fruiting and grain |
 | **Autumn** | turnip, onion, garlic, squash, grapes, sunflower, pumpkin (vanilla) | the harvest, the storables |
-| **Winter** | almost nothing grows (matches Fallow's dieback) | scarcity, forcing stored/preserved food |
+| **Winter** | leek and turnip trickle; every other crop left standing dies | scarcity: live on stores, preserves, and saved seed |
 
 Winter is the point, not a gap. Because Fallow already nearly stops growth and accelerates dieback
 in winter (`SeasonalGrowthRates`, winter growth 0.05, decay 3.0), winter naturally starves fresh
 variety. That is exactly where a diet feature earns drama: variety in winter has to come from
-**preserved** food ([preservation](#73-winter-scarcity-and-preservation)).
+**preserved** food ([preservation](#73-winter-scarcity-and-preservation)). And winter is not just a
+stall: non-hardy crops left standing die in the field ([winter kill](#74-winter-kill-and-seed-saving)),
+so seed has to be saved and stores laid in before the season turns.
 
 ---
 
@@ -111,7 +119,7 @@ single `EcologyTask`); G-H are the two that need genuinely new mechanics.
 |---|---|---|---|
 | **A. Farmland crop** | `CropBlock` (wheat/carrot), age 0-7 | block + model + season gate | turnip, onion, garlic, leek, cabbage, lettuce, radish, tomato, pepper, barley |
 | **B. Berry bush** | `SweetBerryBushBlock`, age 0-3, right-click | block + model | strawberry, (raspberry/blackberry if wanted) |
-| **C. Leaf-drop fruit** | apples from oak; cherry leaves drop nothing | fruiting-leaf state or fruit block + season task | cherry, apple (extension), plum |
+| **C. Leaf-drop fruit** | Fallow's own `FruitDropTask` (oak apples in autumn) | `fruiting.types` entry + fruit item | cherry, plum |
 | **D. Tall stalk** | double `TallGrassBlock` / sugar cane vertical | 2-block crop block | maize |
 | **E. Stem crop** | `StemBlock` (pumpkin/melon) | stem + fruit block | squash, gourd |
 | **F. Paddy** | farmland + water proximity | growth gate on adjacent water | rice |
@@ -162,9 +170,12 @@ it is literally on-name).
 **Cherry** - stone fruit, and the most vanilla-faithful crop possible.
 - Idiom C (leaf-drop). Diet: fruit. Blossom in spring, fruit ripens late spring to early summer.
 - Home: cherry grove (the biome exists and its trees currently drop nothing).
-- Outputs: cherries. Zero new growth code: a season task marks cherry leaves as fruiting
-  (blockstate `fruiting=true`) during the window, harvested by hand or dropped on leaf decay, like
-  apples from oak.
+- Outputs: cherries. Zero new growth code, literally: the existing fruiting system
+  (`FruitDropTask`) already drops apples on open ground under natural oak canopy in autumn, and its
+  `fruiting.types` map is open. Cherry is one new entry (`minecraft:cherry_leaves` ->
+  `fallow:cherries`, season `spring`, the calendar's spring signature fruit) plus the cherry item.
+  Decided over a fruiting-leaf blockstate: ripe fruit drops beneath the canopy in season, like
+  apples.
 - Hook: extends an existing vanilla tree that is currently purely decorative. Strong flagship.
 
 **Strawberry** - bush fruit, spreads itself.
@@ -175,8 +186,8 @@ it is literally on-name).
 - Hook: second forage demonstrator, and a spring counterpart to vanilla's autumn sweet berries.
 
 **Peas (legume)** - the mechanically richest crop, and the only plant protein.
-- Idiom G v2 (climbs a trellis) or Idiom A v1 (bush on farmland, simpler first cut). Diet:
-  **protein**. Spring.
+- Idiom G (climbs a trellis; the trellis block ships in v1 alongside it). Diet: **protein**.
+  Spring.
 - Home: plains, forest edges.
 - Outputs: peas, pea seeds.
 - Hook: **nitrogen fixing.** A harvested/mature legume enriches the soil under and beside it (coarse
@@ -204,7 +215,7 @@ it is literally on-name).
 - Outputs: tomato. Composes with FD if present.
 
 **Cucumber** - climbing summer vegetable, preservation feedstock.
-- Idiom G (trellis) or ground vine. Diet: vegetable. Summer.
+- Idiom G (trellis, shipped in v1 by peas). Diet: vegetable. Summer.
 - Home: plains, warm edges.
 - Outputs: cucumber, which pickles for winter variety ([preservation](#73-winter-scarcity-and-preservation)).
 
@@ -230,13 +241,12 @@ out seasons, biomes, or a brewing/preservation sub-theme.
 **More fruit**
 - **Grapes** - Idiom G (trellis), fruit, autumn. Home: savanna slopes, meadow, warm hills. Sets up a
   preservation and (later) wine line (raisins, must).
-- **Apple (vanilla extension)** - Idiom H/C. Let mature oak leaves seasonally bear apples in autumn,
-  the same fruiting-leaf mechanic as cherry, so vanilla's rare-decay apple becomes a real seasonal
-  harvest. Diet: fruit.
+- **Apple** - already shipped: `FruitDropTask` drops apples under natural oak and dark oak in
+  autumn. Listed only because it anchors idiom C; no new work.
 - **Plum** - Idiom C, stone fruit on flowering/oak-adjacent trees, autumn. Optional second leaf-drop
   fruit if cherry lands well.
-- **Raspberry / blackberry** - Idiom B, fruit, summer. Only if not running More Berries, which
-  already covers this on 26.2 (avoid overlap; prefer to defer to it).
+- **Raspberry / blackberry** - Idiom B, fruit, summer. Ships on its own merits regardless of what
+  else is installed; shared item tags let it compose with More Berries rather than conflict.
 
 **More vegetables and gourds**
 - **Squash / gourd** - Idiom E (stem crop, like pumpkin), vegetable, autumn. Winter squash is a
@@ -306,7 +316,24 @@ a future **diet** feature, and it motivates a light **preservation** layer:
 Preservation is out of scope for the crop layer itself but the crops are chosen so it drops in
 cleanly later.
 
-### 7.4 Diet tags (feeding a future diet feature)
+### 7.4 Winter kill and seed saving
+
+Winter is a hard stop with named exceptions, not a general slowdown. Decided so autumn has real
+stakes:
+
+- **Non-hardy crops die in the field.** When winter arrives, a standing crop that is not cold-hardy
+  withers on its next random tick: the block turns to a dead, unharvestable state and the yield is
+  gone. Merely stalling would let a player park a field over winter and harvest in spring; killing
+  it makes the autumn harvest a deadline.
+- **Cold-hardy crops trickle.** Turnip and leek (and later rye/barley as overwinter grains) keep
+  growing into winter at a heavily reduced rate - the only fresh food the season offers.
+- **Seed saving matters.** Harvest returns more seed than was planted, and seeds are items, safe in
+  a chest. Losing a field to winter costs the crop, not the line - but only if seed was kept back.
+  Plant in season, harvest before the freeze, save seed for spring: the loop the whole calendar
+  teaches.
+- Config: `crops.winterKill` (default `true`) and a per-crop `hardy` flag.
+
+### 7.5 Diet tags (feeding a future diet feature)
 
 Crops declare their diet group by **item tag**, mirroring how Fallow already resolves biomes by tag.
 This keeps the diet feature (whenever it lands) fully data-driven and lets vanilla, these crops, and
@@ -338,7 +365,7 @@ Register in `Fallow.onInitialize()` next to `VegetationSproutTask`, each config-
 
 ```java
 EcologyScheduler.registerTask(new ForageSpreadTask(GROWTH_RATES));   // wild crops emerge
-EcologyScheduler.registerTask(new FruitingLeafTask(GROWTH_RATES));   // cherry/apple fruiting window
+// cherry/plum fruit drops ride the existing FruitDropTask via fruiting.types - no new task
 // legume soil enrichment can be folded into crop block ticks rather than a scheduler task
 ```
 
@@ -362,11 +389,12 @@ Player-planted Idiom-A/B/D/E/F crops grow on the **vanilla random tick** (overri
 ```java
 // inside the crop block's randomTick, before the vanilla age-increment
 float m = FallowSeasons.growthMultiplier(level.getServer());     // 1.5 spring ... 0.05 winter
+if (isWinter && !this.hardy) { wither(level, pos, state); return; } // winter kill (see 7.4)
 if (m < this.minSeasonMultiplier) return;                        // cool-season crop won't grow in winter
 if (random.nextFloat() > m) return;                              // otherwise scale grow chance by season
 ```
 
-`minSeasonMultiplier` and any warm/cool bias are per-crop. This is the mechanism that makes seasons
+`minSeasonMultiplier`, the `hardy` flag, and any warm/cool bias are per-crop. This is the mechanism that makes seasons
 matter to farming, and it reuses the exact multiplier `SeasonalGrowthRates` already computes.
 Fallow's optional client visuals (leaf tint, etc.) are untouched.
 
@@ -384,18 +412,17 @@ already tune grass and flowers. No new resolution logic.
 
 ### 8.5 New growth channels
 
-Add to `GrowthChannel`: `FORAGE` (wild crop spread) and `FRUITING` (leaf-drop fruit window). Both
-flow through the existing layered providers (`ConfigGrowthRates` x `SeasonalGrowthRates` x
-`BiomeGrowthRates`). Per the `SeasonalGrowthRates` doc, `FRUIT`-like channels already carry
-per-species season terms, so `FRUITING` should be added to that skip-the-shared-curve set and given
-its own spring/summer/autumn/winter weights.
+Add to `GrowthChannel`: `FORAGE` (wild crop spread), flowing through the existing layered providers
+(`ConfigGrowthRates` x `SeasonalGrowthRates` x `BiomeGrowthRates`). No `FRUITING` channel is needed:
+cherry and plum drops ride the existing `FRUIT` channel through `FruitDropTask`, whose per-type
+season gate already replaces the shared curve.
 
 ### 8.6 Registration and assets
 
 New content Fallow does not currently ship, all under `dev.isaac.fallow`:
 
-- **Blocks**: crop blocks (per idiom), trellis (if Idiom G lands), wild variants. Registered in a
-  new `FallowBlocks` alongside the existing `FallowItems`.
+- **Blocks**: crop blocks (per idiom), trellis (Idiom G, ships in v1), wild variants. Registered in
+  a new `FallowBlocks` alongside the existing `FallowItems`.
 - **Items**: crop foods, seeds, and byproducts, with `fallow:diet/*` tags.
 - **Loot tables**: crop drops, leaf-drop fruit, wild-plant drops.
 - **Models / textures**: vanilla-faithful, matching the game's crop art density.
@@ -424,45 +451,51 @@ Illustrative shape for `config/fallow.json`, `crops` section. Values are placeho
       "biomeDensity": { "#minecraft:is_forest": 1.3, "minecraft:desert": 0.1 },
       "biomeGrowth":  { "minecraft:swamp": 1.6, "minecraft:cherry_grove": 1.4 }
     },
+    "winterKill": true,
     "legumes": { "fixNitrogen": true, "fixRadius": 1 },
-    "paddy":   { "range": 4 },
-    "fruitingLeaves": { "enabled": true, "cherry": true, "appleFromOak": true }
+    "paddy":   { "range": 4 }
   }
 }
 ```
 
-All of it lives under the master `enabled` switch and is re-read on `/fallow reload`, matching every
-other Fallow system.
+Cherry and plum drops are not configured here: they are entries in the existing top-level
+`fruiting.types` map. All of it lives under the master `enabled` switch and is re-read on
+`/fallow reload`, matching every other Fallow system.
 
 ---
 
-## 10. Open decisions
+## 10. Decisions
 
-- **Removability messaging.** How loudly to warn that crops are the one non-clean-uninstall part.
-  Recommendation: a dedicated note in `features.md` and a config comment, not a second first-join
-  popup.
-- **Trellis or bushes for climbers (Idiom G).** v1 can ship legumes/cucumber as farmland bushes and
-  add trellis later; trellis is the nicer visual but the biggest new-block cost.
-- **Cherry harvest method.** Fruiting-leaf blockstate + right-click, versus fruit dropping on decay
-  like apples. Blockstate is more satisfying and controllable; decay-drop is cheaper. Leaning
+The open questions this proposal shipped with, resolved 2026-07-18:
+
+- **Removability messaging.** No new first-join message: crops are part of the mod, and the
+  existing one-time notice already covers Fallow altering the world. The caveat is a dedicated note
+  in `features.md` and a comment beside `crops.enabled` in the config.
+- **Trellis for climbers (Idiom G).** The trellis block ships in the first round; peas climb it
+  from v1 rather than starting as a farmland bush. Cucumber, hops, and grapes reuse it later.
+- **Cherry harvest method.** Decay drop: ripe cherries fall to the ground beneath the canopy in
+  season via the existing `FruitDropTask`, exactly like autumn oak apples. No fruiting-leaf
   blockstate.
-- **How hard winter bites.** Whether any crop can grow at all in winter (leek/turnip trickle) or
-  winter is a hard stop for farming. Ties to how punishing the future diet feature should be.
-- **Overlap policy with FD / More Berries.** Prefer to *defer* to installed mods (skip raspberry if
-  More Berries present) versus always shipping our own. Leaning: ship our own, tag-compatible, so
-  Fallow stands alone but composes.
-- **Diet feature coupling.** Crops ship the `diet/*` tags regardless, but the diet *mechanic* is a
-  separate doc and module. Confirm crops land first, diet second.
+- **How hard winter bites.** Hard, with named exceptions: leek and turnip trickle, every other
+  standing crop dies in the field, and seed saving is the intended answer
+  ([7.4](#74-winter-kill-and-seed-saving)).
+- **Overlap policy with FD / More Berries.** Ship our own, always; no detection of or deferral to
+  other mods. Shared item tags keep the crops composing instead of conflicting.
+- **Diet feature coupling.** Crops land first and ship the `diet/*` tags with them; the diet
+  mechanic is a separate later doc and module that consumes the tags.
 
 ---
 
 ## 11. Phasing
 
 - **Phase C1 (v1):** Tier 1 crops (turnip, cabbage, onion, cherry, strawberry, peas), the
-  `ForageSpreadTask` with wild onion + strawberry, season-gated farmland growth, legume nitrogen
-  fixing, and the `diet/*` tags. Reuses idioms A, B, C, and the scheduler. Only legumes need
-  genuinely new behavior.
-- **Phase C2:** Tier 2 (rice/paddy, maize/tall-stalk, tomato, cucumber) and the trellis block.
+  **trellis block** peas climb, the `ForageSpreadTask` with wild onion + strawberry, season-gated
+  farmland growth with winter kill, legume nitrogen fixing, and the `diet/*` tags. Reuses idioms A,
+  B, C, and the scheduler; the trellis and the legume hook are the genuinely new behavior.
+- **Phase C2:** Tier 2 (rice/paddy, maize/tall-stalk, tomato, cucumber on the existing trellis).
+  The C2 textures are already drawn and ship with C1 (`crops_art.py`, marked "Phase C2 art"):
+  rice stages, the two-block corn stalk (seam-matched top and bottom halves), staked tomato,
+  trellis cucumber, and the eight foods/seeds. C2 implementation is wiring, not art.
 - **Phase C3:** Extended roster as desired (brewing line with barley + hops, grapes, squash,
   sunflower/apple vanilla extensions, herbs, flax) plus the preservation layer that winter scarcity
   motivates.
