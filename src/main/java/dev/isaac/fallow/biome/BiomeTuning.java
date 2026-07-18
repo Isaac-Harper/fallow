@@ -1,4 +1,4 @@
-package dev.isaac.fallow.growth;
+package dev.isaac.fallow.biome;
 
 import dev.isaac.fallow.Fallow;
 import dev.isaac.fallow.FallowConfig;

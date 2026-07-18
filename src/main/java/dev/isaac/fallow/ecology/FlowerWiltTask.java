@@ -17,6 +17,8 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 
+import java.util.Set;
+
 /**
  * Seasonal flower lifecycle: flowers wilt away through autumn and winter. The
  * {@code FLOWER_WILT} decay channel is near-zero in spring and high in autumn/winter, so
@@ -25,6 +27,17 @@ import net.minecraft.world.level.levelgen.Heightmap;
  * are gone by deep winter. Stateless and visit-driven.
  */
 public final class FlowerWiltTask implements EcologyTask {
+    /**
+     * Garden flowers beyond {@code #minecraft:small_flowers} that live and die with the seasons.
+     * Deliberately not {@code #minecraft:flowers}: that is the bee-attraction tag, and it also
+     * holds mangrove propagules (which {@link SaplingSpreadTask} seeds), cherry and flowering
+     * azalea <em>leaf</em> blocks, chorus flowers, spore blossoms, and cactus flowers - none of
+     * which should wilt away.
+     */
+    private static final Set<Block> TALL_AND_BED_FLOWERS = Set.of(
+        Blocks.SUNFLOWER, Blocks.LILAC, Blocks.PEONY, Blocks.ROSE_BUSH,
+        Blocks.PITCHER_PLANT, Blocks.PINK_PETALS, Blocks.WILDFLOWERS);
+
     private final GrowthRateProvider rates;
 
     public FlowerWiltTask(GrowthRateProvider rates) {
@@ -54,7 +67,7 @@ public final class FlowerWiltTask implements EcologyTask {
             }
             BlockPos pos = new BlockPos(x, y, z);
             BlockState state = level.getBlockState(pos);
-            if (!state.is(BlockTags.FLOWERS)) {
+            if (!isSeasonalFlower(state)) {
                 continue;
             }
             // A tall flower's heightmap position is its lower half; remove from the lower half
@@ -71,5 +84,10 @@ public final class FlowerWiltTask implements EcologyTask {
             wilted++;
         }
         return wilted;
+    }
+
+    /** The flowers this task wilts - the same set {@link VegetationSproutTask} counts as density. */
+    static boolean isSeasonalFlower(BlockState state) {
+        return state.is(BlockTags.SMALL_FLOWERS) || TALL_AND_BED_FLOWERS.contains(state.getBlock());
     }
 }

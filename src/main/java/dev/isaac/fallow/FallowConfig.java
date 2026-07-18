@@ -10,6 +10,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -462,12 +463,7 @@ public final class FallowConfig {
         public double winterFall = 0.5;
 
         public double leafFallWeight(Season season) {
-            return switch (season) {
-                case SPRING -> springFall;
-                case SUMMER -> summerFall;
-                case AUTUMN -> autumnFall;
-                case WINTER -> winterFall;
-            };
+            return bySeason(season, springFall, summerFall, autumnFall, winterFall);
         }
     }
 
@@ -498,12 +494,7 @@ public final class FallowConfig {
         public double winterDensity = 0.4;
 
         public double densityFactor(Season season) {
-            return switch (season) {
-                case SPRING -> springDensity;
-                case SUMMER -> summerDensity;
-                case AUTUMN -> autumnDensity;
-                case WINTER -> winterDensity;
-            };
+            return bySeason(season, springDensity, summerDensity, autumnDensity, winterDensity);
         }
     }
 
@@ -576,21 +567,12 @@ public final class FallowConfig {
         public double winterDecayMultiplier = 3.0;
 
         public double multiplier(Season season) {
-            return switch (season) {
-                case SPRING -> springMultiplier;
-                case SUMMER -> summerMultiplier;
-                case AUTUMN -> autumnMultiplier;
-                case WINTER -> winterMultiplier;
-            };
+            return bySeason(season, springMultiplier, summerMultiplier, autumnMultiplier, winterMultiplier);
         }
 
         public double decayMultiplier(Season season) {
-            return switch (season) {
-                case SPRING -> springDecayMultiplier;
-                case SUMMER -> summerDecayMultiplier;
-                case AUTUMN -> autumnDecayMultiplier;
-                case WINTER -> winterDecayMultiplier;
-            };
+            return bySeason(season,
+                springDecayMultiplier, summerDecayMultiplier, autumnDecayMultiplier, winterDecayMultiplier);
         }
     }
 
@@ -608,12 +590,7 @@ public final class FallowConfig {
         public double winterDayPortion = 0.375;
 
         public double dayPortion(Season season) {
-            return switch (season) {
-                case SPRING -> springDayPortion;
-                case SUMMER -> summerDayPortion;
-                case AUTUMN -> autumnDayPortion;
-                case WINTER -> winterDayPortion;
-            };
+            return bySeason(season, springDayPortion, summerDayPortion, autumnDayPortion, winterDayPortion);
         }
     }
 
@@ -665,12 +642,7 @@ public final class FallowConfig {
         public double winterRainfall = 0.6;
 
         public double rainfall(Season season) {
-            return switch (season) {
-                case SPRING -> springRainfall;
-                case SUMMER -> summerRainfall;
-                case AUTUMN -> autumnRainfall;
-                case WINTER -> winterRainfall;
-            };
+            return bySeason(season, springRainfall, summerRainfall, autumnRainfall, winterRainfall);
         }
         /**
          * Per-biome maximum snow depth (layers, 1-8), same key format as {@code biomePrecip}.
@@ -682,12 +654,7 @@ public final class FallowConfig {
         public Map<String, Double> snowDepth = defaultSnowDepth();
 
         public double tempOffset(Season season) {
-            return switch (season) {
-                case SPRING -> springTempOffset;
-                case SUMMER -> summerTempOffset;
-                case AUTUMN -> autumnTempOffset;
-                case WINTER -> winterTempOffset;
-            };
+            return bySeason(season, springTempOffset, summerTempOffset, autumnTempOffset, winterTempOffset);
         }
 
         private static Map<String, Boolean> defaultBiomePrecip() {
@@ -772,13 +739,30 @@ public final class FallowConfig {
                     loaded.clamp();
                     return loaded;
                 }
+                backupBroken(path); // Gson returns null for an empty/truncated file
             } catch (Exception e) {
                 Fallow.LOGGER.warn("Failed to read config, using defaults", e);
+                backupBroken(path);
             }
         }
         FallowConfig fresh = new FallowConfig();
         fresh.save(path);
         return fresh;
+    }
+
+    /**
+     * A hand-tuned config with one JSON typo must not be destroyed by the defaults rewrite below:
+     * keep the unreadable file next to the fresh one so the user's per-biome maps and tree tables
+     * survive the mistake.
+     */
+    private static void backupBroken(Path path) {
+        Path backup = path.resolveSibling(path.getFileName() + ".broken");
+        try {
+            Files.copy(path, backup, StandardCopyOption.REPLACE_EXISTING);
+            Fallow.LOGGER.warn("Kept the unreadable config at {}; writing defaults to {}", backup, path);
+        } catch (IOException e) {
+            Fallow.LOGGER.warn("Could not back up the unreadable config", e);
+        }
     }
 
     /** Persist to the standard config path (used by the in-game config screen). */
@@ -820,6 +804,7 @@ public final class FallowConfig {
         saplings.maxColumnHeight = clampInt(saplings.maxColumnHeight, 2, 64);
         saplings.densityRadius = clampInt(saplings.densityRadius, 1, 16);
         saplings.maxSaplingsNearby = clampInt(saplings.maxSaplingsNearby, 0, 64);
+        saplings.clusterRadius = clampInt(saplings.clusterRadius, 0, 8);
         leafLitter.chance = clampChance(leafLitter.chance);
         leafLitter.podzolShare = clampChance(leafLitter.podzolShare);
         leafLitter.minCanopyLayers = clampInt(leafLitter.minCanopyLayers, 1, 16);
@@ -906,13 +891,34 @@ public final class FallowConfig {
         events.heatwaveTempBonus = clampTempOffset(events.heatwaveTempBonus);
         fruiting.scanHeight = clampInt(fruiting.scanHeight, 1, 32);
         if (fruiting.types != null) {
-            for (Fruiting.FruitType t : fruiting.types.values()) {
+            fruiting.types.forEach((leaf, t) -> {
                 t.chance = clampChance(t.chance);
-            }
+                // A typo'd season would silently skip the gate (byId -> null reads as "any
+                // season"); make that explicit and say so once, at load.
+                if (t.season != null && Season.byId(t.season) == null) {
+                    Fallow.LOGGER.warn("fruiting.types[{}].season \"{}\" is not a season "
+                        + "(spring/summer/autumn/winter); treating it as every season", leaf, t.season);
+                    t.season = null;
+                }
+            });
         }
         if (precipitation.snowDepth != null) {
             precipitation.snowDepth.replaceAll((k, v) -> Math.max(1.0, Math.min(8.0, v)));
         }
+    }
+
+    /**
+     * Pick the value for {@code season} from four flat per-season fields. Sections keep the four
+     * fields flat (not a nested {@link SeasonWeights}) so existing hand-tuned JSON keeps working;
+     * this is the one switch over them, so a season can't be miswired in any single section.
+     */
+    static double bySeason(Season season, double spring, double summer, double autumn, double winter) {
+        return switch (season) {
+            case SPRING -> spring;
+            case SUMMER -> summer;
+            case AUTUMN -> autumn;
+            case WINTER -> winter;
+        };
     }
 
     /** Seasonal temperature offsets stay within a sane band (+/-2.0 spans any biome's class). */

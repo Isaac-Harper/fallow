@@ -5,6 +5,8 @@ with defaults on first launch. Edit it by hand, through the **Mod Menu** screen 
 switch + per-feature on/off toggles; numeric values are file-only), or on a live server with
 `/fallow reload`. Values are **clamped on
 load** to the ranges below - out-of-range hand edits are silently corrected, never rejected.
+If the file has a JSON error it is kept aside as `fallow.json.broken` (so hand-tuned maps and
+tables survive the typo) and defaults are written in its place, with a log warning.
 
 - **Server-side.** The simulation runs on the server; the config lives with the server/world.
   In singleplayer the Mod Menu screen edits take effect immediately; on a dedicated server,
@@ -127,7 +129,8 @@ sapling by registry name, so modded trees work automatically.
 | `maxColumnHeight` | `24` | 2-64 | Max log-column height walked when validating a tree. |
 | `densityRadius` | `10` | 1-16 | Box radius for the per-species density count. |
 | `maxSaplingsNearby` | `3` | 0-64 | Fallback density cap for tree types **not** in `types` (modded). |
-| `types` | see below | per sapling id | Per-species `rate` (0-1), `radius` (1-`logSearchRadius`), `density` (0-256), and optional `phenology`. |
+| `clusterRadius` | `1` | 0-8 | How far a mega-species (dark/pale oak) seed may be nudged onto the cell that best advances a partial 2x2; 0 turns the nudge off. |
+| `types` | see below | per sapling id | Per-species `rate` (0-1), `radius` (1-`logSearchRadius`), `density` (0-256), optional `phenology`, and `twoByTwo` for mega-species. |
 
 **`types` defaults** - grounded in each species' real dispersal/regeneration ecology
 (`rate` = prolificacy, `radius` = dispersal distance, `density` = canopy closure; all
@@ -361,6 +364,9 @@ its season.
 
 **`types` defaults:** `minecraft:oak_leaves` and `minecraft:dark_oak_leaves` -> `minecraft:apple`,
 season `autumn`, chance `0.01` (vanilla's only tree fruit; the map is open for modded items).
+`chance` is further scaled by the biome growth multiplier and stalled by a heatwave, like every
+growth channel. An entry's `season` must be `spring`/`summer`/`autumn`/`winter`; anything else is
+nulled with a log warning and means every season, as does disabling seasons entirely.
 
 Two more `vegetation` knobs (alongside `biomeDensity`/`biomeGrowth`/`biomeSeasonality`):
 **`biomeSeasonPhase`** (id/tag -> 0-3) shifts which season a biome's growth peaks in - default

@@ -1,6 +1,6 @@
 package dev.isaac.fallow;
 
-import dev.isaac.fallow.growth.BiomeTuning;
+import dev.isaac.fallow.biome.BiomeTuning;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;

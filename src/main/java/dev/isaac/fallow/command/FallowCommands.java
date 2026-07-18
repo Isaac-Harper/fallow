@@ -4,11 +4,9 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import dev.isaac.fallow.Fallow;
-import dev.isaac.fallow.FallowConfig;
 import dev.isaac.fallow.api.FallowSeasons;
 import dev.isaac.fallow.api.Season;
 import dev.isaac.fallow.ecology.EcologyScheduler;
-import dev.isaac.fallow.growth.BiomeTuning;
 import dev.isaac.fallow.season.SeasonService;
 import dev.isaac.fallow.season.SeasonState;
 import dev.isaac.fallow.trail.TrailData;
@@ -109,9 +107,7 @@ public final class FallowCommands {
     }
 
     private static int reload(CommandContext<CommandSourceStack> c) {
-        Fallow.CONFIG = FallowConfig.load();
-        SeasonService.invalidate();
-        BiomeTuning.rebuild(c.getSource().getServer().registryAccess()); // re-resolve per-biome tuning
+        Fallow.reload(c.getSource().getServer());
         c.getSource().sendSuccess(() -> Component.literal("Fallow config reloaded"), true);
         return 1;
     }

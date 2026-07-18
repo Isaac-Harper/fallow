@@ -1,5 +1,6 @@
 package dev.isaac.fallow;
 
+import dev.isaac.fallow.biome.BiomeTuning;
 import dev.isaac.fallow.command.FallowCommands;
 import dev.isaac.fallow.ecology.BambooSpreadTask;
 import dev.isaac.fallow.ecology.DiebackTask;
@@ -26,13 +27,16 @@ import dev.isaac.fallow.season.WeatherService;
 import dev.isaac.fallow.trail.TrailSystem;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Common entrypoint. Simulation is server-side, driven by Fabric lifecycle events. Three mixins:
- * two client-side cosmetic ({@code BiomeMixin} seasonal foliage tint, {@code LeafFallMixin}
- * seasonal falling-leaf particles) and one common gameplay ({@code BiomeTemperatureMixin}, the
+ * Common entrypoint. Simulation is server-side, driven by Fabric lifecycle events. Six mixins:
+ * five client-side cosmetic ({@code BiomeMixin} seasonal foliage tint, {@code FixedFoliageTintMixin}
+ * birch/spruce/lily-pad tints, {@code LeafFallMixin} seasonal falling-leaf particles,
+ * {@code CherryLeafParticleMixin} seasonal cherry petals, {@code RangeSelectItemModelPropertiesMixin}
+ * the season_clock item-model property) and one common gameplay ({@code BiomeTemperatureMixin}, the
  * seasonal-temperature precipitation lever - the deliberate exception to the otherwise
  * events-and-public-APIs rule). The client source set also adds the Mod Menu config screen.
  */
@@ -50,6 +54,20 @@ public class Fallow implements ModInitializer {
      */
     public static final GrowthRateProvider GROWTH_RATES =
         new BiomeGrowthRates(new SeasonalGrowthRates(new ConfigGrowthRates()));
+
+    /**
+     * The single config-update path: re-read the file, swap {@link #CONFIG} wholesale, and
+     * re-derive everything cached from it. Both {@code /fallow reload} and the config screen's
+     * Done button land here; anything a config change must refresh belongs in this method, not
+     * at its call sites. {@code server} may be null (config screen outside a world).
+     */
+    public static void reload(MinecraftServer server) {
+        CONFIG = FallowConfig.load();
+        SeasonService.invalidate();
+        if (server != null) {
+            BiomeTuning.rebuild(server.registryAccess()); // re-resolve per-biome tuning
+        }
+    }
 
     @Override
     public void onInitialize() {
@@ -73,7 +91,7 @@ public class Fallow implements ModInitializer {
         EcologyScheduler.registerTask(new OvercrowdingTask(GROWTH_RATES));
         EcologyScheduler.registerTask(new FlowerWiltTask(GROWTH_RATES));
         EcologyScheduler.registerTask(new PrecipitationTask());
-        EcologyScheduler.registerTask(new FruitDropTask());
+        EcologyScheduler.registerTask(new FruitDropTask(GROWTH_RATES));
         TrailSystem.register();
         FallowCommands.register();
         FirstJoinNotice.register(); // one-time "this mod changes blocks" notice, shown even when disabled

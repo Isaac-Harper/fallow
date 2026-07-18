@@ -35,7 +35,7 @@ public final class SeasonEventService {
 
     private static void tick(MinecraftServer server) {
         FallowConfig.Events cfg = Fallow.CONFIG.events;
-        if (!cfg.enabled || !Fallow.CONFIG.seasons.enabled) {
+        if (!Fallow.CONFIG.enabled || !cfg.enabled || !Fallow.CONFIG.seasons.enabled) {
             if (SeasonEvents.active() != SeasonEvents.Kind.NONE) {
                 SeasonEvents.clear();
                 ticksRemaining = 0;
@@ -82,24 +82,31 @@ public final class SeasonEventService {
         Fallow.LOGGER.info("[fallow] season event: {} for {} ticks", kind, ticksRemaining);
     }
 
-    /** Hold the event's weather each tick so vanilla's cycle doesn't drift it away mid-event. */
+    /**
+     * Hold the event's weather each tick so vanilla's cycle doesn't drift it away mid-event. The
+     * timers are pinned to the event's own clock, never merely raised: whatever countdown was
+     * running before the event (a clear spell can be up to 180000 ticks) must not survive as the
+     * forced spell's duration, or a storm rolled mid-clear-spell keeps raining for hours after it
+     * ends. Pinned, the timer runs out with the event and vanilla rolls fresh weather.
+     */
     private static void upkeep(ServerLevel level) {
         WeatherData weather = level.getWeatherData();
+        int hold = Math.max(ticksRemaining, 200);
         switch (SeasonEvents.active()) {
             case BLIZZARD -> {
                 weather.setRaining(true);
-                weather.setRainTime(Math.max(weather.getRainTime(), 200));
+                weather.setRainTime(hold);
             }
             case STORM -> {
                 weather.setRaining(true);
                 weather.setThundering(true);
-                weather.setRainTime(Math.max(weather.getRainTime(), 200));
-                weather.setThunderTime(Math.max(weather.getThunderTime(), 200));
+                weather.setRainTime(hold);
+                weather.setThunderTime(hold);
             }
             case HEATWAVE -> {
                 weather.setRaining(false);
                 weather.setThundering(false);
-                weather.setClearWeatherTime(Math.max(weather.getClearWeatherTime(), 200));
+                weather.setClearWeatherTime(hold);
             }
             case NONE -> {
             }

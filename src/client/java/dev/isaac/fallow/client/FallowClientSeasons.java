@@ -60,6 +60,11 @@ public final class FallowClientSeasons {
         recompute();
     }
 
+    /** Config edits change the effective tint parameters without a new payload; recompute now. */
+    public static void refresh() {
+        recompute();
+    }
+
     /** Called every client tick: re-trigger recompute when the dimension changes (overworld-only tint). */
     public static void tickDimensionWatch(Minecraft minecraft) {
         ClientLevel level = minecraft.level;

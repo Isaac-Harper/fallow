@@ -3,7 +3,7 @@ package dev.isaac.fallow.ecology;
 import dev.isaac.fallow.Fallow;
 import dev.isaac.fallow.FallowConfig;
 import dev.isaac.fallow.api.Season;
-import dev.isaac.fallow.growth.BiomeTuning;
+import dev.isaac.fallow.biome.BiomeTuning;
 import dev.isaac.fallow.growth.GrowthChannel;
 import dev.isaac.fallow.growth.GrowthRateProvider;
 import dev.isaac.fallow.season.SeasonClock;
