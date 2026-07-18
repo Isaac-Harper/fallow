@@ -24,6 +24,9 @@
     ],
     "modmenu": [
       "dev.isaac.fallow.client.ModMenuIntegration"
+    ],
+    "fabric-gametest": [
+      "dev.isaac.fallow.gametest.CropGameTests"
     ]
   },
   "mixins": [

@@ -43,6 +43,19 @@ loom {
             configName = "Fallow Test World"
             programArgs("--quickPlaySingleplayer", "fallow-test")
         }
+
+        // `./gradlew runGametest` boots a headless dedicated server, runs every @GameTest
+        // (from the fabric-gametest entrypoint), writes a JUnit report, then exits with a
+        // pass/fail code. Sourced from src/test so the tests stay out of the shipped jar.
+        create("gametest") {
+            server()
+            configName = "Fallow Game Test"
+            source(sourceSets["test"])
+            vmArg("-Dfabric-api.gametest")
+            vmArg("-Dfabric-api.gametest.report-file=" +
+                "${layout.buildDirectory.get()}/gametest/junit.xml")
+            runDir("build/gametest")
+        }
     }
 }
 
@@ -88,6 +101,13 @@ tasks.withType<org.gradle.language.jvm.tasks.ProcessResources>().configureEach {
 
 tasks.withType<JavaCompile>().configureEach {
     options.release = requiredJava.majorVersion.toInt()
+}
+
+// GameTest environment definitions live in main resources so the runGametest server loads them as
+// the mod's data, but they are test-only scaffolding: strip them from the published jar. The dev
+// runs read resources from build/resources/main directly, so they keep working.
+tasks.jar {
+    exclude("data/fallow/test_environment/**")
 }
 
 java {
