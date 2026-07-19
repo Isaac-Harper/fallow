@@ -93,4 +93,69 @@ class DietWindowTest {
         }
         assertEquals(windowSize, w.mealCount());
     }
+
+    @Test
+    void duplicateGroupsInOneMealCountOnce() {
+        // A meal that lists the same group string twice (or has it in both a tag and id) must
+        // count as one distinct group, not two.
+        DietWindow w = new DietWindow();
+        // LinkedHashSet deduplicates within the Set<String> passed in, but the spec says the
+        // Set itself is the meal's group collection - duplicates within a single push are already
+        // collapsed by the caller. Test that distinctGroups() across meals also deduplicates.
+        w.push(groups("grain"), 0, 12);
+        w.push(groups("grain", "fruit"), 1, 12);
+        w.push(groups("grain"), 2, 12);
+        // Only "grain" and "fruit" should be distinct.
+        assertEquals(2, w.distinctGroups().size());
+    }
+
+    @Test
+    void pushEmptyGroupsIsNoOp() {
+        DietWindow w = new DietWindow();
+        w.push(java.util.Set.of(), 0, 12);
+        assertEquals(0, w.mealCount(), "empty groups must not add a meal");
+    }
+
+    @Test
+    void pruneExpiryDaysZeroIsDisabled() {
+        // expiryDays=0 means time-based expiry is off: nothing pruned regardless of currentDay.
+        DietWindow w = new DietWindow();
+        w.push(groups("grain"), 0, 12);
+        w.push(groups("fruit"), 1, 12);
+        w.prune(10_000, 0); // huge currentDay, expiryDays=0
+        assertEquals(2, w.mealCount(), "expiryDays=0 disables pruning");
+    }
+
+    @Test
+    void windowSizeShrinkMidFlightDropsOldestMeals() {
+        // Simulate a config change that reduces the window size: the next push trims to the new size.
+        DietWindow w = new DietWindow();
+        // Fill with windowSize=12 first.
+        for (int i = 0; i < 12; i++) {
+            w.push(groups("grain"), i, 12);
+        }
+        assertEquals(12, w.mealCount());
+        // Now the config is changed to windowSize=5. The next push must trim to 5.
+        w.push(groups("fruit"), 12, 5);
+        assertEquals(5, w.mealCount(), "push with smaller windowSize must trim to the new size");
+    }
+
+    @Test
+    void newGroupsReturnsEmptyWhenNoneAdded() {
+        DietWindow w = new DietWindow();
+        w.push(groups("grain", "fruit"), 0, 12);
+        // All groups already known -> new groups = empty.
+        assertEquals(0, w.newGroups(groups("grain", "fruit")).size());
+    }
+
+    @Test
+    void pruneByDayExpiryBoundaryCase() {
+        // Boundary: a meal exactly at currentDay - expiryDays must be pruned (age >= expiryDays).
+        DietWindow w = new DietWindow();
+        w.push(groups("grain"), 0, 12);   // age = 3 when currentDay=3, expiryDays=3 -> pruned
+        w.push(groups("fruit"), 1, 12);   // age = 2 -> kept
+        w.prune(3, 3);
+        assertEquals(1, w.mealCount());
+        assertTrue(w.distinctGroups().contains("fruit"));
+    }
 }

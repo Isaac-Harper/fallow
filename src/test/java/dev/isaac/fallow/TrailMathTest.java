@@ -88,4 +88,56 @@ class TrailMathTest {
         assertTrue(evicted, "trail must fully recover");
         assertTrue(passes < 1000);
     }
+
+    // -- exact threshold edges --------------------------------------------
+
+    @Test
+    void grassDoesNotConvertOneBelowCoarseThreshold() {
+        // wear = TO_COARSE - 1 (the step that will bring wear to TO_COARSE - 1 is fine).
+        // One step from wear = TO_COARSE - 2: result wear = TO_COARSE - 1, no conversion yet.
+        var s = TrailMath.step(Surface.GRASS, TO_COARSE - 2, TO_COARSE, TO_PATH);
+        assertEquals(TO_COARSE - 1, s.newWear());
+        assertNull(s.convert());
+    }
+
+    @Test
+    void grassConvertsExactlyAtCoarseThreshold() {
+        // wear = TO_COARSE - 1: step brings it to TO_COARSE, triggering conversion.
+        var s = TrailMath.step(Surface.GRASS, TO_COARSE - 1, TO_COARSE, TO_PATH);
+        assertEquals(Convert.TO_COARSE_DIRT, s.convert());
+        assertEquals(TO_COARSE, s.newWear());
+    }
+
+    @Test
+    void coarseDoesNotConvertOneBelowPathThreshold() {
+        // wear = TO_PATH - 2: step -> TO_PATH - 1, no conversion.
+        var s = TrailMath.step(Surface.COARSE_DIRT, TO_PATH - 2, TO_COARSE, TO_PATH);
+        assertEquals(TO_PATH - 1, s.newWear());
+        assertNull(s.convert());
+    }
+
+    @Test
+    void coarseConvertsExactlyAtPathThreshold() {
+        // wear = TO_PATH - 1: step -> TO_PATH, triggering path conversion.
+        var s = TrailMath.step(Surface.COARSE_DIRT, TO_PATH - 1, TO_COARSE, TO_PATH);
+        assertEquals(Convert.TO_PATH, s.convert());
+        assertEquals(TO_PATH, s.newWear());
+    }
+
+    @Test
+    void pathRecoveryExactlyAtCoarseThreshold() {
+        // Path with wear == TO_COARSE: recover -> converts to COARSE_DIRT (w drops to TO_COARSE-1, <=coarse).
+        var r = TrailMath.recover(Surface.PATH, TO_COARSE + 1, 1, TO_COARSE);
+        assertEquals(Convert.TO_COARSE_DIRT, r.convert());
+        assertEquals(TO_COARSE, r.newWear());
+    }
+
+    @Test
+    void wearCappedAtDoublePathThreshold() {
+        // Step on PATH: wear is capped at 2 * stepsToPath regardless of how high it goes.
+        int highWear = TO_PATH * 3;
+        var s = TrailMath.step(Surface.PATH, highWear, TO_COARSE, TO_PATH);
+        assertEquals(TO_PATH * 2, s.newWear(), "wear must not exceed 2*stepsToPath");
+        assertNull(s.convert());
+    }
 }

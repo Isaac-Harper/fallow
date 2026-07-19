@@ -12,7 +12,11 @@
   "entrypoints": {
     "fabric-gametest": [
       "dev.isaac.fallow.gametest.CropGameTests",
-      "dev.isaac.fallow.gametest.DietGameTests"
+      "dev.isaac.fallow.gametest.DietGameTests",
+      "dev.isaac.fallow.gametest.PreservationGameTests"
+    ],
+    "fabric-client-gametest": [
+      "dev.isaac.fallow.gametest.client.CropVisualTest"
     ]
   },
   "depends": {

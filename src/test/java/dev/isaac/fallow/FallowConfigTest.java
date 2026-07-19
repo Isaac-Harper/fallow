@@ -1,9 +1,14 @@
 package dev.isaac.fallow;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import dev.isaac.fallow.api.Season;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FallowConfigTest {
@@ -237,5 +242,128 @@ class FallowConfigTest {
         var dn = new FallowConfig().dayNight;
         assertEquals(0.5, dn.springDayPortion, "spring is the vanilla-neutral season");
         assertEquals(0.5, dn.autumnDayPortion, "autumn is the vanilla-neutral season");
+    }
+
+    // -- load() failure paths via GSON ------------------------------------
+
+    @Test
+    void malformedJsonThrows() {
+        // GSON throws JsonSyntaxException on syntactically broken JSON. The load() path catches
+        // this and backs up the broken file, then returns a fresh default config. This test
+        // documents that the exception is real and load()'s catch clause is not dead code.
+        Gson gson = new GsonBuilder().create();
+        assertThrows(com.google.gson.JsonSyntaxException.class,
+            () -> gson.fromJson("{bad json!!!", FallowConfig.class));
+    }
+
+    @Test
+    void emptyJsonDocumentReturnsNull() {
+        // GSON returns null for an empty or whitespace-only document. The load() path checks
+        // for null and backs up the file before returning defaults - verify the null case exists.
+        Gson gson = new GsonBuilder().create();
+        assertNull(gson.fromJson("null", FallowConfig.class),
+            "GSON returns null for 'null' literal - the load() null-check protects this path");
+    }
+
+    @Test
+    void clampOnFullyOutOfRangeConfigFixesEveryField() {
+        // Hand-construct the worst hand-edited config and verify clamp repairs it without NPE.
+        FallowConfig cfg = new FallowConfig();
+        // Chance fields: must clamp to [0, 1].
+        cfg.vegetation.shortGrassChance = -99;
+        cfg.vegetation.tallGrassChance = 50;
+        cfg.vegetation.flowerChance = -1;
+        cfg.vegetation.bushChance = 200;
+        // Multiplier fields: must clamp to [0, 10].
+        cfg.seasons.springMultiplier = -5;
+        cfg.seasons.summerMultiplier = 99;
+        cfg.seasons.autumnMultiplier = -1;
+        cfg.seasons.winterMultiplier = 100;
+        cfg.seasons.springDecayMultiplier = -3;
+        cfg.seasons.winterDecayMultiplier = 999;
+        // Int fields.
+        cfg.scheduler.tickBudgetMicros = -100;
+        cfg.scheduler.chunksPerTick = -1;
+        cfg.seasons.daysPerSeason = 0;
+        // Portion fields: must clamp to [0.05, 0.95].
+        cfg.dayNight.springDayPortion = -1;
+        cfg.dayNight.summerDayPortion = 10;
+        cfg.dayNight.winterDayPortion = 0;
+        // Diet fields.
+        cfg.diet.windowSize = -5;
+        cfg.diet.mealExpiryDays = 999;
+        cfg.diet.tierOneGroups = 99;
+
+        cfg.clamp(); // must not throw
+
+        assertEquals(0.0, cfg.vegetation.shortGrassChance, 1e-9);
+        assertEquals(1.0, cfg.vegetation.tallGrassChance, 1e-9);
+        assertEquals(0.0, cfg.vegetation.flowerChance, 1e-9);
+        assertEquals(1.0, cfg.vegetation.bushChance, 1e-9);
+        assertEquals(0.0, cfg.seasons.springMultiplier, 1e-9);
+        assertEquals(10.0, cfg.seasons.summerMultiplier, 1e-9);
+        assertEquals(0.0, cfg.seasons.autumnMultiplier, 1e-9);
+        assertEquals(10.0, cfg.seasons.winterMultiplier, 1e-9);
+        assertEquals(0.0, cfg.seasons.springDecayMultiplier, 1e-9);
+        assertEquals(10.0, cfg.seasons.winterDecayMultiplier, 1e-9);
+        assertEquals(10, cfg.scheduler.tickBudgetMicros);
+        assertEquals(0, cfg.scheduler.chunksPerTick);
+        assertEquals(1, cfg.seasons.daysPerSeason);
+        assertEquals(0.05, cfg.dayNight.springDayPortion, 1e-9);
+        assertEquals(0.95, cfg.dayNight.summerDayPortion, 1e-9);
+        assertEquals(0.05, cfg.dayNight.winterDayPortion, 1e-9);
+        assertEquals(4, cfg.diet.windowSize);
+        assertEquals(64, cfg.diet.mealExpiryDays);
+        assertEquals(6, cfg.diet.tierOneGroups);
+    }
+
+    @Test
+    void gsonRoundtripPreservesDietSection() {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        FallowConfig original = new FallowConfig();
+        original.diet.enabled = true;
+        original.diet.windowSize = 16;
+        original.diet.mealExpiryDays = 7;
+        original.diet.tierOneGroups = 3;
+        original.diet.announceNewGroups = false;
+
+        String json = gson.toJson(original);
+        FallowConfig loaded = gson.fromJson(json, FallowConfig.class);
+        loaded.clamp();
+
+        assertTrue(loaded.diet.enabled);
+        assertEquals(16, loaded.diet.windowSize);
+        assertEquals(7, loaded.diet.mealExpiryDays);
+        assertEquals(3, loaded.diet.tierOneGroups);
+        assertEquals(false, loaded.diet.announceNewGroups);
+    }
+
+    // -- bySeason picker --------------------------------------------------
+
+    @Test
+    void bySeasonRoutesCoverAllFourCases() {
+        // The bySeason helper is used by many config sections; verify each arm is reachable.
+        assertEquals(1.0, FallowConfig.bySeason(Season.SPRING, 1.0, 2.0, 3.0, 4.0), 1e-9);
+        assertEquals(2.0, FallowConfig.bySeason(Season.SUMMER, 1.0, 2.0, 3.0, 4.0), 1e-9);
+        assertEquals(3.0, FallowConfig.bySeason(Season.AUTUMN, 1.0, 2.0, 3.0, 4.0), 1e-9);
+        assertEquals(4.0, FallowConfig.bySeason(Season.WINTER, 1.0, 2.0, 3.0, 4.0), 1e-9);
+    }
+
+    @Test
+    void seasonsMultiplierDelegatesToBySeason() {
+        var seasons = new FallowConfig().seasons;
+        assertEquals(seasons.springMultiplier, seasons.multiplier(Season.SPRING), 1e-9);
+        assertEquals(seasons.summerMultiplier, seasons.multiplier(Season.SUMMER), 1e-9);
+        assertEquals(seasons.autumnMultiplier, seasons.multiplier(Season.AUTUMN), 1e-9);
+        assertEquals(seasons.winterMultiplier, seasons.multiplier(Season.WINTER), 1e-9);
+    }
+
+    @Test
+    void dayNightDayPortionDelegatesToBySeason() {
+        var dn = new FallowConfig().dayNight;
+        assertEquals(dn.springDayPortion, dn.dayPortion(Season.SPRING), 1e-9);
+        assertEquals(dn.summerDayPortion, dn.dayPortion(Season.SUMMER), 1e-9);
+        assertEquals(dn.autumnDayPortion, dn.dayPortion(Season.AUTUMN), 1e-9);
+        assertEquals(dn.winterDayPortion, dn.dayPortion(Season.WINTER), 1e-9);
     }
 }

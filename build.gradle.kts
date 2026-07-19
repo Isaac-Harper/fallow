@@ -64,6 +64,17 @@ loom {
                 "${layout.buildDirectory.get()}/gametest/junit.xml")
             runDir("build/gametest")
         }
+
+        // `./gradlew runClientGametest` launches a real client, runs every fabric-client-gametest
+        // entrypoint (the visual CropVisualTest), and exits. Sourced from src/test so the test
+        // classes stay out of the shipped jar. Screenshots land in build/clientGametest/screenshots.
+        create("clientGametest") {
+            client()
+            configName = "Fallow Client Game Test"
+            source(sourceSets["test"])
+            vmArg("-Dfabric.client.gametest")
+            runDir("build/clientGametest")
+        }
     }
 }
 

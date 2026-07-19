@@ -30,6 +30,9 @@ jobs:
       - name: Build and test every version node
         run: ./gradlew chiseledBuild
 
+      - name: Run GameTests (headless in-world suite)
+        run: ./gradlew runGametest
+
       - name: Upload jars
         uses: actions/upload-artifact@v4
         with:

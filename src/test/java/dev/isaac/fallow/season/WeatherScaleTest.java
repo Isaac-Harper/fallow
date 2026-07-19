@@ -45,4 +45,20 @@ class WeatherScaleTest {
         assertTrue(clear > 0 && clear < Integer.MAX_VALUE, "clear spell stays a sane finite length");
         assertTrue(rain >= 20, "rain spell never goes below the floor");
     }
+
+    @Test
+    void negativeWetnessIsClampedLikeZero() {
+        // Negative wetness is not a valid config value but must not divide by zero or go negative.
+        int clear = WeatherService.scaledSpell(ROLL, false, -1.0);
+        int rain = WeatherService.scaledSpell(ROLL, true, -1.0);
+        assertTrue(clear > 0 && clear < Integer.MAX_VALUE, "clear spell stays finite for negative wetness");
+        assertTrue(rain >= 20, "rain spell floor holds for negative wetness");
+    }
+
+    @Test
+    void verySmallRollStaysAtMinimumFloor() {
+        // Extremely small roll values must stay at the minimum floor of 20 ticks.
+        int result = WeatherService.scaledSpell(1, true, 0.0001);
+        assertEquals(20, result, "result must be at least 20 ticks even for tiny roll");
+    }
 }

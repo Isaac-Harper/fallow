@@ -52,4 +52,24 @@ class DayCycleTest {
         assertTrue(DayCycle.rateFor(0, 0.0) > 0);
         assertTrue(Float.isFinite(DayCycle.rateFor(12_000, 1.0)));
     }
+
+    @Test
+    void rateContinuityAtHalfPortion() {
+        // Exactly 0.5: day and night rates must both be exactly 1.0 (bit-identical to vanilla).
+        assertEquals(1.0f, DayCycle.rateFor(0, 0.5));          // day phase
+        assertEquals(1.0f, DayCycle.rateFor(12_000, 0.5));     // night phase
+    }
+
+    @Test
+    void cycleInvariantSweep() {
+        // For any dayPortion p: 1/rateDay + 1/rateNight == 2 (one full cycle = 24000 real ticks).
+        // rateFor returns float; float-to-double conversion introduces ~1e-7 relative error,
+        // so we tolerate 1e-5 (well above float epsilon, well below 1e-3 perceptibility).
+        for (double p = 0.1; p <= 0.9; p += 0.1) {
+            double rateDay = DayCycle.rateFor(0, p);
+            double rateNight = DayCycle.rateFor(12_000, p);
+            double invSum = 1.0 / rateDay + 1.0 / rateNight;
+            assertEquals(2.0, invSum, 1e-5, "1/rateDay + 1/rateNight must be 2 for dayPortion=" + p);
+        }
+    }
 }
