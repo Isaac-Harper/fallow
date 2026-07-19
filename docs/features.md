@@ -156,10 +156,11 @@ placed, and the ecology sim stays exactly as it is. With it on:
 - **Double-height crop** - **corn** grows two blocks tall (pitcher-crop style): the lower half
   drives growth and the upper half appears at age 2. Breaking either half clears both.
 
-- **Trellis climbers (four)** - planted on a crafted trellis block (four sticks in an X pattern,
+- **Trellis climbers (four)** - planted on a crafted trellis block (five sticks in an X pattern,
   yields two), placed on dirt-family ground or farmland. Right-clicking the trellis with seeds
   starts the vine at age 0; right-clicking the ripe vine (age 3) harvests the crop and resets to
-  age 1, so the trellis persists season to season.
+  age 1, so the trellis persists season to season. Breaking a climber always returns the trellis;
+  an immature vine also returns its planting item, so a mistaken break never loses the seed.
   - **Peas** (spring) - the legume; see Nitrogen fixing below.
   - **Cucumber** (summer) - preservation feedstock; pickles into a winter storable.
   - **Grapes** (summer/autumn) - fruit and brewing feedstock.
@@ -248,9 +249,10 @@ The diet layer is a third opt-in, gated by `diet.enabled` (default `false`) unde
 switch. With it off the diet window is never updated and no absorption is ever applied; the world
 is untouched either way.
 
-- **Six food groups** - grain, vegetable, fruit, protein, fungi, and sugar & oil. Every vanilla
-  food and every Fallow crop already lands in at least one group. Third-party foods count too if
-  a datapack tags them under the six `fallow:diet/*` item tags; nothing is hardcoded.
+- **Six food groups** - grain, vegetable, fruit, protein, fungi, and sugar & oil. Every edible
+  vanilla food and every Fallow crop already lands in at least one group; raw grains are tagged
+  for their future prepared forms even though they cannot be eaten directly. Third-party foods
+  count too if a datapack tags them under the six `fallow:diet/*` item tags; nothing is hardcoded.
 - **A varied recent diet earns extra absorption hearts** - eating across the groups gives a
   refreshed bonus on top of vanilla hunger, never a penalty for monotony:
   - **Four or more groups:** Absorption I (two extra hearts).

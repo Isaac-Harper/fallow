@@ -18,30 +18,39 @@
     },
     {
       "bonus_rolls": 0.0,
-      "conditions": [
-        {
-          "block": "fallow:grape_crop",
-          "condition": "minecraft:block_state_property",
-          "properties": {
-            "age": "3"
-          }
-        }
-      ],
       "entries": [
         {
-          "type": "minecraft:item",
-          "functions": [
+          "type": "minecraft:alternatives",
+          "children": [
             {
-              "add": false,
-              "count": {
-                "type": "minecraft:uniform",
-                "max": 3.0,
-                "min": 2.0
-              },
-              "function": "minecraft:set_count"
+              "type": "minecraft:item",
+              "conditions": [
+                {
+                  "block": "fallow:grape_crop",
+                  "condition": "minecraft:block_state_property",
+                  "properties": {
+                    "age": "3"
+                  }
+                }
+              ],
+              "functions": [
+                {
+                  "add": false,
+                  "count": {
+                    "type": "minecraft:uniform",
+                    "max": 3.0,
+                    "min": 2.0
+                  },
+                  "function": "minecraft:set_count"
+                }
+              ],
+              "name": "fallow:grapes"
+            },
+            {
+              "type": "minecraft:item",
+              "name": "fallow:grapes"
             }
-          ],
-          "name": "fallow:grapes"
+          ]
         }
       ],
       "rolls": 1.0

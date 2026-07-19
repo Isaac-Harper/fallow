@@ -112,6 +112,11 @@ public abstract class TrellisCropBlock extends VegetationBlock implements Boneme
         if (age >= MAX_AGE) {
             return;
         }
+        // Light gate mirrors the vanilla crop analogues (SweetBerryBushBlock / CropBlock): growth
+        // needs raw brightness >= 9 at the block. Growth only; the winter-kill tick above still runs.
+        if (level.getRawBrightness(pos, 0) < 9) {
+            return;
+        }
         int newAge = age + 1;
         level.setBlock(pos, state.setValue(AGE, newAge), Block.UPDATE_ALL);
         if (newAge == MAX_AGE) {

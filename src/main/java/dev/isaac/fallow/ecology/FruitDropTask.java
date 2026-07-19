@@ -110,7 +110,7 @@ public final class FruitDropTask implements EcologyTask {
             if (Fallow.CONFIG.seasons.enabled) {
                 Season fruitSeason = Season.byId(type.season);
                 if (fruitSeason != null && fruitSeason != season) {
-                    return null;
+                    continue; // out of season here, but a fruiting layer higher up may still drop
                 }
             }
             // Per-type base chance x the provider stack's scaling (biome growth, heatwave stall;

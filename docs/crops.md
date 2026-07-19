@@ -323,8 +323,8 @@ Implemented 2026-07-18. Because winter nearly stops growth, fresh variety collap
 That is the hook for the **diet** feature, and the **preservation** layer is what lets players carry
 diet variety through it:
 
-- Storables (winter squash, dried grain, onions, garlic) keep their diet value through winter
-  as-is.
+- Storables keep their diet value through winter as-is. Today that means onions and garlic, the
+  edible storables that already exist; winter squash and dried grain are future kitchen scope.
 - Preserved goods crafted in warm seasons and consumed in winter:
   - **Jam** (fruit group) - two `fallow:jam_fruits` items (strawberries, cherries, raspberries,
     blackberries, plum, grapes, sweet berries, apple, or glow berries) + sugar + glass bottle.

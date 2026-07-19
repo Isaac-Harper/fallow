@@ -51,13 +51,14 @@ public final class DietWindow {
 
     /**
      * Removes meals whose in-game day is at least {@code expiryDays} behind {@code currentDay}.
-     * Skipped entirely when {@code expiryDays} is 0 (time-based expiry disabled).
+     * Skipped entirely when {@code expiryDays} is 0 (time-based expiry disabled). Returns whether
+     * any meal was removed so callers can mark storage dirty only on a real change.
      */
-    public void prune(long currentDay, long expiryDays) {
+    public boolean prune(long currentDay, long expiryDays) {
         if (expiryDays == 0) {
-            return;
+            return false;
         }
-        meals.removeIf(m -> (currentDay - m.day()) >= expiryDays);
+        return meals.removeIf(m -> (currentDay - m.day()) >= expiryDays);
     }
 
     /**

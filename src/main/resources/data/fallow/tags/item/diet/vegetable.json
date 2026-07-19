@@ -1,10 +1,14 @@
 {
   "values": [
     "minecraft:carrot",
+    "minecraft:golden_carrot",
     "minecraft:potato",
     "minecraft:baked_potato",
     "minecraft:beetroot",
+    "minecraft:beetroot_soup",
     "minecraft:pumpkin",
+    "minecraft:pumpkin_pie",
+    "minecraft:dried_kelp",
     "fallow:turnip",
     "fallow:cabbage",
     "fallow:onion",
@@ -15,6 +19,11 @@
     "fallow:pepper",
     "fallow:tomato",
     "fallow:cucumber",
-    "fallow:pickles"
+    "fallow:pickles",
+    "fallow:mint",
+    "fallow:sage",
+    "fallow:thyme",
+    "fallow:ramsons",
+    "fallow:sorrel"
   ]
 }

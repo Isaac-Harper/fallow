@@ -5,12 +5,20 @@ import dev.isaac.fallow.FallowConfig;
 import dev.isaac.fallow.diet.DietService;
 import dev.isaac.fallow.diet.DietWindow;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.item.Item;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -121,6 +129,69 @@ public class DietGameTests {
 
         helper.assertFalse(player.hasEffect(MobEffects.ABSORPTION),
             "player should NOT have Absorption when the diet window is empty");
+        helper.succeed();
+    }
+
+    /**
+     * The six diet tags. A food item's diet coverage is its membership in one of these; nested
+     * {@code #tag} references are resolved by the loaded tag graph, so {@code ItemStack.is} already
+     * sees through them.
+     */
+    private static final List<TagKey<Item>> DIET_TAGS = List.of(
+        dietTag("fruit"), dietTag("fungi"), dietTag("grain"),
+        dietTag("protein"), dietTag("sugar_oil"), dietTag("vegetable"));
+
+    private static TagKey<Item> dietTag(String group) {
+        return TagKey.create(Registries.ITEM,
+            Identifier.fromNamespaceAndPath("fallow", "diet/" + group));
+    }
+
+    /**
+     * Items that carry a FOOD component but are not real meals: junk/harm foods that should never
+     * build variety, plus odd items (mob buckets) that hold food properties yet are placed rather
+     * than eaten. Any real, nourishing food must be tagged rather than added here.
+     */
+    private static final Set<String> DIET_EXEMPT = Set.of(
+        // Junk / harm foods: eating them is a mistake, so they earn no diet variety.
+        "minecraft:rotten_flesh",
+        "minecraft:spider_eye",
+        "minecraft:poisonous_potato",
+        "minecraft:pufferfish",
+        "minecraft:suspicious_stew",
+        "minecraft:enchanted_golden_apple",
+        // Mob buckets carry a FOOD component in 26.1 but are placed, not eaten.
+        "minecraft:pufferfish_bucket",
+        "minecraft:salmon_bucket",
+        "minecraft:cod_bucket",
+        "minecraft:tropical_fish_bucket");
+
+    // Permanent guard: every item with food properties (vanilla + fallow) must sit in at least one
+    // fallow:diet/* tag, or be an explicitly exempt junk/harm food. Runs in-world so the item
+    // component data and the loaded item tags are both real.
+    @GameTest(environment = "fallow:noseason")
+    public void everyFoodItemHasADietTag(GameTestHelper helper) {
+        List<String> problems = new ArrayList<>();
+        for (Holder.Reference<Item> holder : BuiltInRegistries.ITEM.listElements().toList()) {
+            if (!holder.value().components().has(DataComponents.FOOD)) {
+                continue;
+            }
+            String id = holder.key().identifier().toString();
+            if (DIET_EXEMPT.contains(id)) {
+                continue;
+            }
+            boolean tagged = false;
+            for (TagKey<Item> tag : DIET_TAGS) {
+                if (holder.is(tag)) {
+                    tagged = true;
+                    break;
+                }
+            }
+            if (!tagged) {
+                problems.add(id);
+            }
+        }
+        helper.assertTrue(problems.isEmpty(),
+            "food items in no fallow:diet/* tag and not exempt: " + problems);
         helper.succeed();
     }
 }

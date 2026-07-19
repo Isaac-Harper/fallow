@@ -73,7 +73,9 @@ are missing, and the current tier. On first covering a new group, a one-line act
   and bonus magnitudes per tier, and `announceNewGroups` (true).
 - **Tag hygiene**: vanilla foods are already distributed across the six tags; the audit that
   ships with this feature should verify every vanilla food item lands in at least one group
-  and flag untagged modded foods at reload (log, not error).
+  and flag untagged modded foods at reload (log, not error). Group coverage comes from the
+  edible members: raw grains and raw vanilla mushrooms are tagged as taxonomy for future
+  prepared foods, not because they can be eaten on their own.
 
 ---
 

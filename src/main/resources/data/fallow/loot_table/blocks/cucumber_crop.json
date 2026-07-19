@@ -18,49 +18,48 @@
     },
     {
       "bonus_rolls": 0.0,
-      "conditions": [
-        {
-          "block": "fallow:cucumber_crop",
-          "condition": "minecraft:block_state_property",
-          "properties": {
-            "age": "3"
-          }
-        }
-      ],
       "entries": [
         {
-          "type": "minecraft:item",
-          "functions": [
+          "type": "minecraft:alternatives",
+          "children": [
             {
-              "add": false,
-              "count": {
-                "type": "minecraft:uniform",
-                "max": 2.0,
-                "min": 1.0
-              },
-              "function": "minecraft:set_count"
+              "type": "minecraft:group",
+              "conditions": [
+                {
+                  "block": "fallow:cucumber_crop",
+                  "condition": "minecraft:block_state_property",
+                  "properties": {
+                    "age": "3"
+                  }
+                }
+              ],
+              "children": [
+                {
+                  "type": "minecraft:item",
+                  "functions": [
+                    {
+                      "add": false,
+                      "count": {
+                        "type": "minecraft:uniform",
+                        "max": 2.0,
+                        "min": 1.0
+                      },
+                      "function": "minecraft:set_count"
+                    }
+                  ],
+                  "name": "fallow:cucumber"
+                },
+                {
+                  "type": "minecraft:item",
+                  "name": "fallow:cucumber_seeds"
+                }
+              ]
+            },
+            {
+              "type": "minecraft:item",
+              "name": "fallow:cucumber_seeds"
             }
-          ],
-          "name": "fallow:cucumber"
-        }
-      ],
-      "rolls": 1.0
-    },
-    {
-      "bonus_rolls": 0.0,
-      "conditions": [
-        {
-          "block": "fallow:cucumber_crop",
-          "condition": "minecraft:block_state_property",
-          "properties": {
-            "age": "3"
-          }
-        }
-      ],
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "fallow:cucumber_seeds"
+          ]
         }
       ],
       "rolls": 1.0

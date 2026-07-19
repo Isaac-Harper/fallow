@@ -126,6 +126,11 @@ public final class CornCropBlock extends DoublePlantBlock implements Bonemealabl
         if (age >= MAX_AGE) {
             return;
         }
+        // Light gate mirrors the vanilla crop analogues (PitcherCropBlock / CropBlock): growth needs
+        // raw brightness >= 9 at the block. Growth only; the winter-kill tick above still runs.
+        if (level.getRawBrightness(pos, 0) < 9) {
+            return;
+        }
         // Advance one age per qualifying tick (same increment idiom as the other Fallow climbers
         // and bushes; the season weight above is the pacing lever).
         grow(level, state, pos, 1);

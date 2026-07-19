@@ -36,6 +36,12 @@ public abstract class LivingEntityEatMixin {
         if (eaten.isEmpty()) {
             return;
         }
+        // Mirror vanilla's abort guard: completeUsingItem re-checks useItem against the held
+        // stack and releases (without eating) on a mismatch, so an aborted eat must not credit
+        // a meal.
+        if (!eaten.equals(self.getItemInHand(self.getUsedItemHand()))) {
+            return;
+        }
         DietService.recordMeal(player, eaten);
     }
 }

@@ -90,6 +90,11 @@ public abstract class BerryBushBlock extends VegetationBlock implements Bonemeal
                 return;
             }
         }
+        // Light gate mirrors the vanilla crop analogues (SweetBerryBushBlock / CropBlock): growth
+        // needs raw brightness >= 9 at the block.
+        if (level.getRawBrightness(pos, 0) < 9) {
+            return;
+        }
         level.setBlock(pos, state.setValue(AGE, age + 1), Block.UPDATE_ALL);
     }
 

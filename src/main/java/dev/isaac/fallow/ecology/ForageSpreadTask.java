@@ -5,11 +5,13 @@ import dev.isaac.fallow.FallowConfig;
 import dev.isaac.fallow.growth.GrowthChannel;
 import dev.isaac.fallow.growth.GrowthRateProvider;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,6 +19,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -83,12 +86,12 @@ public final class ForageSpreadTask implements EcologyTask {
             if (random.nextFloat() >= rates.chance(GrowthChannel.FORAGE, level, pos)) {
                 continue;
             }
-            // Find eligible plants for this biome.
-            String biomeId = level.getBiome(pos).unwrapKey()
+            // Find eligible plants for this biome (resolve the biome holder once).
+            Holder<Biome> biome = level.getBiome(pos);
+            String biomeId = biome.unwrapKey()
                 .map(k -> k.identifier().toString()).orElse("");
-            Set<String> biomeTags = level.getBiome(pos).tags()
-                .map(t -> "#" + t.location().toString())
-                .collect(java.util.stream.Collectors.toSet());
+            Set<String> biomeTags = new HashSet<>();
+            biome.tags().forEach(t -> biomeTags.add("#" + t.location().toString()));
 
             List<String> eligible = new ArrayList<>();
             for (var entry : cfg.homes.entrySet()) {

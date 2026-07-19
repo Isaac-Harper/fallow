@@ -3,6 +3,7 @@ package dev.isaac.fallow.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,5 +32,14 @@ public final class WitheredCropBlock extends BushBlock {
         return state.is(Blocks.FARMLAND)
             || state.is(BlockTags.DIRT)
             || state.is(Blocks.GRASS_BLOCK);
+    }
+
+    /**
+     * Not bonemealable. BushBlock's default self-spreads to a neighbour, which would duplicate the
+     * dead husk; a withered crop is inert and instabreaks with no drops.
+     */
+    @Override
+    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
+        return false;
     }
 }

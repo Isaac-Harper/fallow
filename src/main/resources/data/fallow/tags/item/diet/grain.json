@@ -2,6 +2,8 @@
   "values": [
     "minecraft:wheat",
     "minecraft:bread",
+    "minecraft:cookie",
+    "minecraft:pumpkin_pie",
     "fallow:barley",
     "fallow:rye",
     "fallow:oats",

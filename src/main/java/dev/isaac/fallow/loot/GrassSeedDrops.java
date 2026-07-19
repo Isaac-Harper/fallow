@@ -47,7 +47,7 @@ public final class GrassSeedDrops {
     }
 
     /**
-     * One pool: conditions [crops_enabled, random_chance(seedDropChance)], entries: three
+     * One pool: conditions [crops_enabled, random_chance(seedDropChance)], entries: fifteen
      * LootItem entries at equal weight (pool rolls select among them uniformly).
      */
     private static LootPool.Builder seedPool() {

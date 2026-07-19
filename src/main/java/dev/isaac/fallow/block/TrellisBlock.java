@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -45,6 +46,15 @@ public final class TrellisBlock extends BushBlock {
         return state.is(Blocks.GRASS_BLOCK)
             || state.is(BlockTags.DIRT)
             || state.is(Blocks.FARMLAND);
+    }
+
+    /**
+     * Not bonemealable. BushBlock's default self-spreads to a neighbour, which would duplicate the
+     * crafted lattice; a trellis is a placed structure, not a growable plant.
+     */
+    @Override
+    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
+        return false;
     }
 
     /**
