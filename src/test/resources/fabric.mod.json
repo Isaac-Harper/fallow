@@ -12,7 +12,12 @@
   "entrypoints": {
     "fabric-gametest": [
       "dev.isaac.fallow.gametest.CropGameTests",
-      "dev.isaac.fallow.gametest.PreservationGameTests"
+      "dev.isaac.fallow.gametest.PreservationGameTests",
+      "dev.isaac.fallow.gametest.LightGateGameTests",
+      "dev.isaac.fallow.gametest.BonemealGameTests",
+      "dev.isaac.fallow.gametest.ClimberLootGameTests",
+      "dev.isaac.fallow.gametest.FruitingGateGameTests",
+      "dev.isaac.fallow.gametest.HarvestGameTests"
     ],
     "fabric-client-gametest": [
       "dev.isaac.fallow.gametest.client.CropVisualTest"

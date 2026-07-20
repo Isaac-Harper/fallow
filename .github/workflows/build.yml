@@ -30,8 +30,14 @@ jobs:
       - name: Build and test every version node
         run: ./gradlew chiseledBuild
 
-      - name: Run GameTests (headless in-world suite)
-        run: ./gradlew runGametest
+      # Each node's GameTest server runs in its own Gradle invocation: booting two
+      # different-version test servers in one invocation fails at the task level even
+      # when every test passes, so the nodes must not share a runGametest invocation.
+      - name: Run GameTests on 26.2 (headless in-world suite)
+        run: ./gradlew :26.2:runGametest
+
+      - name: Run GameTests on 26.1.2 (headless in-world suite)
+        run: ./gradlew :26.1.2:runGametest
 
       - name: Upload jars
         uses: actions/upload-artifact@v4

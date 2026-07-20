@@ -182,7 +182,7 @@ public class CropGameTests {
     }
 
     // 6. Corn grows its upper half once the lower half reaches the double-block age.
-    @GameTest(environment = "fallow:growing", maxTicks = 200)
+    @GameTest(environment = "fallow:growing", maxTicks = 200, skyAccess = true)
     public void cornGrowsSecondBlock(GameTestHelper helper) {
         baseCropConfig();
         setCropWeight("fallow:corn_crop", 1.0, 1.0, 1.0, 1.0);
@@ -213,7 +213,7 @@ public class CropGameTests {
     }
 
     // 7. A pea vine reaching maturity fixes nitrogen in exactly one adjacent coarse dirt.
-    @GameTest(environment = "fallow:growing", maxTicks = 200)
+    @GameTest(environment = "fallow:growing", maxTicks = 200, skyAccess = true)
     public void nitrogenFixingConvertsCoarseDirt(GameTestHelper helper) {
         baseCropConfig();
         setCropWeight("fallow:pea_crop", 1.0, 1.0, 1.0, 1.0);
@@ -317,8 +317,9 @@ public class CropGameTests {
         });
     }
 
-    // 10. A strawberry bush stalls (not withers) in winter: age unchanged, still a bush.
-    @GameTest(environment = "fallow:winter")
+    // 10. A strawberry bush stalls (not withers) in winter: age unchanged after many ticks.
+    // skyAccess = true ensures darkness is NOT a backstop; the winter weight (0.0) is the sole lever.
+    @GameTest(environment = "fallow:winter", maxTicks = 200, skyAccess = true)
     public void strawberryStallsInWinter(GameTestHelper helper) {
         baseCropConfig();
         setCropWeight("fallow:strawberry_bush", 1.0, 1.0, 1.0, 0.0);
@@ -329,10 +330,42 @@ public class CropGameTests {
 
         withSeason(helper, Season.WINTER, () -> {
             BlockPos cropAbs = helper.absolutePos(CROP);
-            level.getBlockState(cropAbs).randomTick(level, cropAbs, level.getRandom());
+            // 60 ticks under open sky: a non-stalled bush would almost certainly advance at least
+            // once (weight 1.0 summer passes every tick). Winter weight 0.0 must hold it at age 2.
+            for (int i = 0; i < 60; i++) {
+                level.getBlockState(cropAbs).randomTick(level, cropAbs, level.getRandom());
+            }
             // Bushes never winter-kill: the block stays a bush and the age does not move.
             helper.assertBlockPresent(FallowBlocks.STRAWBERRY_BUSH, CROP);
             helper.assertBlockProperty(CROP, BlockStateProperties.AGE_3, 2);
+            helper.succeed();
+        });
+    }
+
+    // 10-positive. Same strawberry setup in summer (weight 1.0): proves the rig can grow, so the
+    // winter stall above is meaningful and not hiding a broken randomTick path.
+    @GameTest(environment = "fallow:growing", maxTicks = 200, skyAccess = true)
+    public void strawberryGrowsInSummer(GameTestHelper helper) {
+        baseCropConfig();
+        setCropWeight("fallow:strawberry_bush", 1.0, 1.0, 1.0, 0.0);
+        ServerLevel level = helper.getLevel();
+        helper.setBlock(GROUND, Blocks.FARMLAND);
+        helper.setBlock(CROP, FallowBlocks.STRAWBERRY_BUSH.defaultBlockState()
+            .setValue(BlockStateProperties.AGE_3, 2));
+
+        withSeason(helper, Season.SUMMER, () -> {
+            BlockPos cropAbs = helper.absolutePos(CROP);
+            for (int i = 0; i < 60; i++) {
+                BlockState state = level.getBlockState(cropAbs);
+                if (state.getValue(BlockStateProperties.AGE_3) > 2) {
+                    break;
+                }
+                state.randomTick(level, cropAbs, level.getRandom());
+            }
+            helper.assertBlockProperty(CROP, BlockStateProperties.AGE_3,
+                age -> age > 2,
+                net.minecraft.network.chat.Component.literal(
+                    "strawberry bush should advance past age 2 in summer under open sky"));
             helper.succeed();
         });
     }
