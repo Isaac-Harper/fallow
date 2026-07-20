@@ -3,8 +3,7 @@
   "package": "dev.isaac.fallow.mixin",
   "compatibilityLevel": "${java}",
   "mixins": [
-    "BiomeTemperatureMixin",
-    "LivingEntityEatMixin"
+    "BiomeTemperatureMixin"
   ],
   "injectors": {
     "defaultRequire": 1

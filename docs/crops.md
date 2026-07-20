@@ -4,22 +4,21 @@ Status: **Phases C1, C2, C3 extended roster, and C3 preservation layer implement
 The full crop roster and preservation layer are shipped and live behind `crops.enabled` (default `false`):
 
 - **C1:** Turnip, cabbage, onion, cherry, strawberry, peas; the trellis block; `ForageSpreadTask`
-  with wild onion and strawberry bush; season-gated farmland growth with winter kill; legume
-  nitrogen fixing; and the `diet/*` item tags.
+  with wild onion and strawberry bush; season-gated farmland growth with winter kill; and legume
+  nitrogen fixing.
 - **C2:** Rice (paddy mechanic, `RicePaddy`), corn (double-height `CornCropBlock`), tomato,
   cucumber on the trellis.
 - **C3 roster:** Leek, barley, rye, oat, garlic, radish, parsnip, pepper, flax; grapes and hops
   on the trellis; raspberry and blackberry bushes; squash (stem crop); plum (fruiting.types);
   eleven wild forage plants (wild rice, wild grape vine, wild hops, chanterelle, mint, sage,
   thyme, ramsons, sorrel, plus existing wild onion and strawberry bush).
-- **C3 preservation layer:** Jam (fruit group, crafted with `fallow:jam_fruits` + sugar +
-  glass bottle), pickles (vegetable group, crafted with cucumbers + glass bottle), raisins
-  (fruit group, grapes dried by furnace/smoker/campfire), and dried chanterelles (fungi group,
-  chanterelles dried by furnace/smoker/campfire). Jar items (jam, pickles) return a glass
-  bottle on eating via `usingConvertsTo`; dried items eat fast like dried kelp.
+- **C3 preservation layer:** Jam (crafted with `fallow:jam_fruits` + sugar + glass bottle),
+  pickles (crafted with cucumbers + glass bottle), raisins (grapes dried by
+  furnace/smoker/campfire), and dried chanterelles (chanterelles dried by
+  furnace/smoker/campfire). Jar items (jam, pickles) return a glass bottle on eating via
+  `usingConvertsTo`; dried items eat fast like dried kelp.
 
-The diet mechanic that consumes the `fallow:diet/*` tags is also implemented ([diet.md](diet.md)).
-Still future: the diet micro-flavor phase and masting (bumper seed years for oaks).
+Still future: masting (bumper seed years for oaks).
 
 The document below is the design record as written; see [features.md](features.md) for the
 plain-language tour and [configuration.md](configuration.md) for the full config reference.
@@ -106,8 +105,8 @@ Aim there first.
 ## 4. The seasonal calendar (the spine)
 
 This is the structural idea the whole roster hangs on. Organize crops so each season has a signature
-harvest, which makes "eat seasonally" legible and gives the seasons real stakes for a future diet
-feature. Seasons come from `FallowSeasons.season(server)`; each crop declares a `plantSeason` and a
+harvest, which makes "eat seasonally" legible and gives the seasons real stakes at the table.
+Seasons come from `FallowSeasons.season(server)`; each crop declares a `plantSeason` and a
 `harvestSeason` window.
 
 | Season | Signature crops | Character |
@@ -119,7 +118,7 @@ feature. Seasons come from `FallowSeasons.season(server)`; each crop declares a 
 
 Winter is the point, not a gap. Because Fallow already nearly stops growth and accelerates dieback
 in winter (`SeasonalGrowthRates`, winter growth 0.05, decay 3.0), winter naturally starves fresh
-variety. That is exactly where a diet feature earns drama: variety in winter has to come from
+variety. That is exactly where the layer earns drama: food in winter has to come from
 **preserved** food ([preservation](#73-winter-scarcity-and-preservation)). And winter is not just a
 stall: non-hardy crops left standing die in the field ([winter kill](#74-winter-kill-and-seed-saving)),
 so seed has to be saved and stores laid in before the season turns.
@@ -279,7 +278,7 @@ out seasons, biomes, or a brewing/preservation sub-theme.
 - **Forest mushrooms (chanterelle etc.)** - Idiom H forage, fungi, autumn. Spread in forests via
   `ForageSpreadTask`, extending vanilla's two mushrooms with a seasonal gathered one.
 - **Wild herbs** (mint, sage, thyme, wild garlic/ramsons, sorrel) - pure foragables spread by the
-  flower engine, seasonal, minor diet weight as seasonings/teas. Mint enables a tea/drink hook if a
+  flower engine, seasonal, minor culinary use as seasonings/teas. Mint enables a tea/drink hook if a
   thirst layer ever lands.
 
 ---
@@ -320,21 +319,20 @@ soil sim a reason to care about what the player plants. Config-gated (`crops.leg
 ### 7.3 Winter scarcity and preservation
 
 Implemented 2026-07-18. Because winter nearly stops growth, fresh variety collapses in winter by design.
-That is the hook for the **diet** feature, and the **preservation** layer is what lets players carry
-diet variety through it:
+The **preservation** layer is what lets players carry a stock of food through it:
 
-- Storables keep their diet value through winter as-is. Today that means onions and garlic, the
-  edible storables that already exist; winter squash and dried grain are future kitchen scope.
+- Storables keep through winter as-is. Today that means onions and garlic, the edible storables
+  that already exist; winter squash and dried grain are future kitchen scope.
 - Preserved goods crafted in warm seasons and consumed in winter:
-  - **Jam** (fruit group) - two `fallow:jam_fruits` items (strawberries, cherries, raspberries,
+  - **Jam** - two `fallow:jam_fruits` items (strawberries, cherries, raspberries,
     blackberries, plum, grapes, sweet berries, apple, or glow berries) + sugar + glass bottle.
     Eating the jar returns the glass bottle via `usingConvertsTo`; uses the drink animation;
     stacks to 16.
-  - **Pickles** (vegetable group) - two cucumbers + glass bottle. Same jar-return mechanism.
-  - **Raisins** (fruit group) - grapes dried in a furnace, smoker, or over a campfire.
-    Fast-eat (0.8 s), like dried kelp.
-  - **Dried chanterelles** (fungi group) - chanterelles dried in a furnace, smoker, or over a
-    campfire. Same fast-eat.
+  - **Pickles** - two cucumbers + glass bottle. Same jar-return mechanism.
+  - **Raisins** - grapes dried in a furnace, smoker, or over a campfire. Fast-eat (0.8 s),
+    like dried kelp.
+  - **Dried chanterelles** - chanterelles dried in a furnace, smoker, or over a campfire.
+    Same fast-eat.
 - This turns autumn into a "put up food for winter" phase, which is exactly the agricultural rhythm
   Fallow's seasons imply. The `fallow:jam_fruits` tag is open for datapack extension.
 
@@ -354,25 +352,6 @@ stakes:
   Plant in season, harvest before the freeze, save seed for spring: the loop the whole calendar
   teaches.
 - Config: `crops.winterKill` (default `true`) and a per-crop `hardy` flag.
-
-### 7.5 Diet tags (feeding a future diet feature)
-
-Crops declare their diet group by **item tag**, mirroring how Fallow already resolves biomes by tag.
-This keeps the diet feature (whenever it lands) fully data-driven and lets vanilla, these crops, and
-third-party food (FD, Ube's, More Berries) all count with zero hardcoding.
-
-```
-fallow:diet/grain      wheat, bread, rice, corn, barley, ...
-fallow:diet/vegetable  carrot, potato, beetroot, turnip, onion, cabbage, tomato, ...
-fallow:diet/fruit      apple, melon, sweet_berries, cherry, strawberry, grapes, ...
-fallow:diet/protein    (meats + eggs via vanilla tags) + peas, beans
-fallow:diet/fungi      red_mushroom, brown_mushroom, chanterelle, ...
-fallow:diet/sugar_oil  sugar, honey, sunflower_seeds, ...
-```
-
-A diet feature would track which groups a player has eaten recently and grant/withhold a small
-bonus based on variety. The crop layer only ships the tags and the food items; the mechanic is a
-separate module.
 
 ---
 
@@ -445,12 +424,13 @@ New content Fallow does not currently ship, all under `dev.isaac.fallow`:
 
 - **Blocks**: crop blocks (per idiom), trellis (Idiom G, ships in v1), wild variants. Registered in
   a new `FallowBlocks` alongside the existing `FallowItems`.
-- **Items**: crop foods, seeds, and byproducts, with `fallow:diet/*` tags.
+- **Items**: crop foods, seeds, and byproducts.
 - **Loot tables**: crop drops, leaf-drop fruit, wild-plant drops.
 - **Models / textures**: vanilla-faithful, matching the game's crop art density.
 - **Worldgen**: none required for player farming; wild crops are placed by `ForageSpreadTask` at
   runtime, not by feature/placed-feature worldgen, keeping them tied to the sim.
-- **Tags**: diet groups plus biome-home tags where a vanilla tag does not already fit.
+- **Tags**: the `fallow:jam_fruits` recipe-input tag plus biome-home tags where a vanilla tag does
+  not already fit.
 
 Mixins: none expected. Everything uses Fabric lifecycle events, `EcologyTask`, and vanilla block
 overrides, keeping parity with Fallow's "compatible and removable" stance for the code paths (the
@@ -503,8 +483,6 @@ The open questions this proposal shipped with, resolved 2026-07-18:
   ([7.4](#74-winter-kill-and-seed-saving)).
 - **Overlap policy with FD / More Berries.** Ship our own, always; no detection of or deferral to
   other mods. Shared item tags keep the crops composing instead of conflicting.
-- **Diet feature coupling.** Crops land first and ship the `diet/*` tags with them; the diet
-  mechanic is a separate later doc and module that consumes the tags.
 
 ---
 
@@ -512,7 +490,7 @@ The open questions this proposal shipped with, resolved 2026-07-18:
 
 - **Phase C1 (implemented):** Tier 1 crops (turnip, cabbage, onion, cherry, strawberry, peas),
   the trellis block, `ForageSpreadTask` with wild onion and strawberry bush, season-gated farmland
-  growth with winter kill, legume nitrogen fixing, and the `diet/*` tags.
+  growth with winter kill, and legume nitrogen fixing.
 - **Phase C2 (implemented):** Tier 2 - rice with the paddy mechanic (`RicePaddy`,
   `crops.paddy.range`), corn as a double-height stalk (`CornCropBlock`), tomato, and cucumber on
   the existing trellis.
@@ -521,6 +499,5 @@ The open questions this proposal shipped with, resolved 2026-07-18:
   via `fruiting.types`; and eleven wild forage plants spread by `ForageSpreadTask`.
 - **C3 preservation layer (implemented 2026-07-18):** Jam (crafted, jar-return via
   `usingConvertsTo`), pickles (crafted, jar-return), raisins (furnace/smoker/campfire drying),
-  and dried chanterelles (furnace/smoker/campfire drying). All four keep their source diet group.
-- **Later, separate:** The diet mechanic itself, consuming the `fallow:diet/*` tags this layer
-  ships. Per-group micro-flavor bonuses and masting are also future.
+  and dried chanterelles (furnace/smoker/campfire drying).
+- **Later, separate:** Masting (irregular bumper seed years for oaks) is future.

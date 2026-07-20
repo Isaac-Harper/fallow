@@ -45,8 +45,6 @@
   "fallow.config.winter_day.tooltip": "Share of the cycle that is daylight at midwinter. 50% = vanilla.",
   "fallow.config.crops": "Crop Layer",
   "fallow.config.crops.tooltip": "Enables the crop layer: fallow:* crop blocks placed in the world. Ships off by default because planted crops do not uninstall cleanly.",
-  "fallow.config.diet": "Diet Diversity",
-  "fallow.config.diet.tooltip": "Tracks the last N meals across food groups and grants Absorption when the diet is varied enough. Window size and tiers in fallow.json.",
   "fallow.config.reset": "Reset to Defaults",
 
   "block.fallow.turnip_crop": "Turnips",
@@ -139,15 +137,5 @@
   "item.fallow.sage": "Sage",
   "item.fallow.thyme": "Thyme",
   "item.fallow.ramsons": "Ramsons",
-  "item.fallow.sorrel": "Sorrel",
-
-  "fallow.diet.group_added": "%s joins your diet",
-  "fallow.diet.status.covered": "Covered: %s",
-  "fallow.diet.status.header": "Diet window: %s of %s distinct groups",
-  "fallow.diet.status.meals": "Meals in window: %s",
-  "fallow.diet.status.missing": "Missing: %s",
-  "fallow.diet.status.tier": "Tier: %s",
-  "fallow.diet.tier.none": "none",
-  "fallow.diet.tier.one": "1 (Absorption I)",
-  "fallow.diet.tier.two": "2 (Absorption II)"
+  "item.fallow.sorrel": "Sorrel"
 }

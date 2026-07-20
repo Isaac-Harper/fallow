@@ -65,20 +65,14 @@ class ContentConfigTest {
     }
 
     @Test
-    void dietTagMembersExist() {
+    void itemTagMembersExist() {
         List<String> problems = new ArrayList<>();
-        for (String tag : List.of("fruit", "fungi", "grain", "protein", "sugar_oil", "vegetable")) {
-            String path = DATA + "/tags/item/diet/" + tag + ".json";
-            for (String member : tagValues(AssetGraph.readJson(path))) {
-                checkTagMember(member, path, problems);
-            }
-        }
-        // jam_fruits is a fallow item tag consumed by the jam recipe; validate it too.
+        // jam_fruits is a fallow item tag consumed by the jam recipe; validate its members.
         String jamPath = DATA + "/tags/item/jam_fruits.json";
         for (String member : tagValues(AssetGraph.readJson(jamPath))) {
             checkTagMember(member, jamPath, problems);
         }
-        assertNoProblems("diet tags", problems);
+        assertNoProblems("item tags", problems);
     }
 
     @Test

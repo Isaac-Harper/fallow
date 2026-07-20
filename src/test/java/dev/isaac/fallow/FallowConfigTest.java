@@ -289,10 +289,6 @@ class FallowConfigTest {
         cfg.dayNight.springDayPortion = -1;
         cfg.dayNight.summerDayPortion = 10;
         cfg.dayNight.winterDayPortion = 0;
-        // Diet fields.
-        cfg.diet.windowSize = -5;
-        cfg.diet.mealExpiryDays = 999;
-        cfg.diet.tierOneGroups = 99;
 
         cfg.clamp(); // must not throw
 
@@ -312,30 +308,6 @@ class FallowConfigTest {
         assertEquals(0.05, cfg.dayNight.springDayPortion, 1e-9);
         assertEquals(0.95, cfg.dayNight.summerDayPortion, 1e-9);
         assertEquals(0.05, cfg.dayNight.winterDayPortion, 1e-9);
-        assertEquals(4, cfg.diet.windowSize);
-        assertEquals(64, cfg.diet.mealExpiryDays);
-        assertEquals(6, cfg.diet.tierOneGroups);
-    }
-
-    @Test
-    void gsonRoundtripPreservesDietSection() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        FallowConfig original = new FallowConfig();
-        original.diet.enabled = true;
-        original.diet.windowSize = 16;
-        original.diet.mealExpiryDays = 7;
-        original.diet.tierOneGroups = 3;
-        original.diet.announceNewGroups = false;
-
-        String json = gson.toJson(original);
-        FallowConfig loaded = gson.fromJson(json, FallowConfig.class);
-        loaded.clamp();
-
-        assertTrue(loaded.diet.enabled);
-        assertEquals(16, loaded.diet.windowSize);
-        assertEquals(7, loaded.diet.mealExpiryDays);
-        assertEquals(3, loaded.diet.tierOneGroups);
-        assertEquals(false, loaded.diet.announceNewGroups);
     }
 
     // -- bySeason picker --------------------------------------------------

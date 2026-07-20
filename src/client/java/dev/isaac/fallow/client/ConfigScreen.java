@@ -25,8 +25,8 @@ public final class ConfigScreen extends Screen {
     private static final int WIDGET_HEIGHT = 20;
     private static final int ROW_SPACING = 30;
     private static final int COLUMN_GAP = 10;
-    /** Most rows in either column (left has 5, right has 8); drives the fit-to-window spacing. */
-    private static final int ROWS = 8;
+    /** Most rows in either column (left has 5, right has 7); drives the fit-to-window spacing. */
+    private static final int ROWS = 7;
 
     private final Screen parent;
 
@@ -44,7 +44,6 @@ public final class ConfigScreen extends Screen {
     private boolean shorelineEnabled;
     private boolean flowerWiltEnabled;
     private boolean cropsEnabled;
-    private boolean dietEnabled;
 
     public ConfigScreen(Screen parent) {
         super(Component.translatable("fallow.config.title"));
@@ -66,7 +65,6 @@ public final class ConfigScreen extends Screen {
         this.shorelineEnabled = cfg.shoreline.enabled;
         this.flowerWiltEnabled = cfg.flowerWilt.enabled;
         this.cropsEnabled = cfg.crops.enabled;
-        this.dietEnabled = cfg.diet.enabled;
     }
 
     private static Tooltip tip(String key) {
@@ -120,8 +118,7 @@ public final class ConfigScreen extends Screen {
         y = toggle(rightX, y, rowSpacing, "fallow.config.saplings", this.saplingsEnabled, v -> this.saplingsEnabled = v);
         y = toggle(rightX, y, rowSpacing, "fallow.config.shoreline", this.shorelineEnabled, v -> this.shorelineEnabled = v);
         y = toggle(rightX, y, rowSpacing, "fallow.config.flower_wilt", this.flowerWiltEnabled, v -> this.flowerWiltEnabled = v);
-        y = toggle(rightX, y, rowSpacing, "fallow.config.crops", this.cropsEnabled, v -> this.cropsEnabled = v);
-        toggle(rightX, y, rowSpacing, "fallow.config.diet", this.dietEnabled, v -> this.dietEnabled = v);
+        toggle(rightX, y, rowSpacing, "fallow.config.crops", this.cropsEnabled, v -> this.cropsEnabled = v);
 
         // Reset | Cancel | Done on one bottom row.
         addRenderableWidget(Button.builder(Component.translatable("fallow.config.reset"), b -> resetDefaults())
@@ -165,7 +162,6 @@ public final class ConfigScreen extends Screen {
         cfg.shoreline.enabled = this.shorelineEnabled;
         cfg.flowerWilt.enabled = this.flowerWiltEnabled;
         cfg.crops.enabled = this.cropsEnabled;
-        cfg.diet.enabled = this.dietEnabled;
         cfg.clamp();
         cfg.save();
         Fallow.reload(this.minecraft.getSingleplayerServer()); // null outside singleplayer

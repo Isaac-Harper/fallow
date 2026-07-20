@@ -23,7 +23,6 @@ import dev.isaac.fallow.item.FallowItems;
 import dev.isaac.fallow.loot.CropsEnabledCondition;
 import dev.isaac.fallow.loot.GrassSeedDrops;
 import dev.isaac.fallow.network.SeasonSyncPayload;
-import dev.isaac.fallow.diet.DietService;
 import dev.isaac.fallow.notice.FirstJoinNotice;
 import dev.isaac.fallow.season.PrecipitationBiomes;
 import dev.isaac.fallow.season.SeasonEventService;
@@ -105,7 +104,6 @@ public class Fallow implements ModInitializer {
         TrailSystem.register();
         FallowCommands.register();
         FirstJoinNotice.register(); // one-time "this mod changes blocks" notice, shown even when disabled
-        DietService.register();
 
         LOGGER.info("Fallow initialized");
     }

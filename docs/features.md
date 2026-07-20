@@ -192,7 +192,7 @@ placed, and the ecology sim stays exactly as it is. With it on:
   - **Wild onion** (forest) - the oldest forage entry; yields onion seeds.
   - **Strawberry bush** also spreads wild in meadows, plains, and forests (see Berry bushes above).
   - **Ramsons** (forest) - wild garlic; occasionally yields a garlic item on harvest.
-  - **Chanterelle** (forests, taiga) - fungi, diet group fungi.
+  - **Chanterelle** (forests, taiga) - an edible forest fungus.
   - **Four herbs** spread in their biome homes: mint (river, meadow, swamp), sage (savanna, plains),
     thyme (plains, savanna), sorrel (plains, meadow, forest).
 
@@ -219,10 +219,6 @@ placed, and the ecology sim stays exactly as it is. With it on:
   winter with the rest of the ecosystem), unlike player-planted crops which use per-crop weights.
   Biome homes are config-overridable via `crops.wild.homes`.
 
-- **Diet item tags** - six tags (`fallow:diet/grain`, `/vegetable`, `/fruit`, `/protein`,
-  `/fungi`, `/sugar_oil`) are shipped with their current vanilla and Fallow-crop members. They
-  feed the diet mechanic described below.
-
 - **Preserving food** - autumn harvests can be put up for winter in four ways:
   - **Jam** (fruit group) - craft two fruit from `fallow:jam_fruits` (strawberries, cherries,
     raspberries, blackberries, plum, grapes, sweet berries, apple, or glow berries) with sugar
@@ -233,8 +229,8 @@ placed, and the ecology sim stays exactly as it is. With it on:
   - **Dried chanterelles** (fungi group) - dry chanterelles in a furnace, smoker, or over a
     campfire.
   - Jam and pickles stack to 16 and use the drink animation; raisins and dried chanterelles
-    are fast-eat like dried kelp. Preserved food keeps its diet group, so autumn preserving
-    carries diet variety through winter.
+    are fast-eat like dried kelp. Preserving turns a perishable autumn glut into food that
+    carries through winter.
 
 **Uninstall warning.** Unlike everything else in Fallow, placed crop blocks are real new blocks
 (`fallow:turnip_crop`, `fallow:pea_crop`, etc.). If the mod is removed after crops have been
@@ -242,34 +238,6 @@ planted, those blocks become unknown blocks in the world - they do not vanish cl
 edits (grass, flowers, trails, trees) are reversible; planted crops are not. This is normal for
 any content mod but it contradicts Fallow's usual "removes cleanly" promise, which is why the
 crop layer is a separate opt-in.
-
-## Diet
-
-The diet layer is a third opt-in, gated by `diet.enabled` (default `false`) under the master
-switch. With it off the diet window is never updated and no absorption is ever applied; the world
-is untouched either way.
-
-- **Six food groups** - grain, vegetable, fruit, protein, fungi, and sugar & oil. Every edible
-  vanilla food and every Fallow crop already lands in at least one group; raw grains are tagged
-  for their future prepared forms even though they cannot be eaten directly. Third-party foods
-  count too if a datapack tags them under the six `fallow:diet/*` item tags; nothing is hardcoded.
-- **A varied recent diet earns extra absorption hearts** - eating across the groups gives a
-  refreshed bonus on top of vanilla hunger, never a penalty for monotony:
-  - **Four or more groups:** Absorption I (two extra hearts).
-  - **All six groups:** Absorption II (four extra hearts).
-  - Eating nothing but bread plays exactly vanilla, no punishment.
-- **Your window is your last twelve meals** - the mod tracks the most recent twelve food items
-  you ate. Meals older than a few in-game days also age out, so the bonus describes a current diet
-  rather than one frozen from last week. Untagged food and drinks are ignored: they neither help
-  nor harm the window.
-- **Feedback without new UI** - `/fallow diet` prints which groups your window currently covers,
-  which are missing, how many meals are in the window, and your current tier. On first covering a
-  new group, a brief actionbar note ("Fruit joins your diet") teaches the system in passing
-  (`diet.announceNewGroups`, on by default).
-- **Off by default** - turn it on with `diet.enabled = true` in `config/fallow.json`.
-- **Fully removable** - unlike the crop layer, the diet layer places no new blocks. Disabling
-  the module or removing the mod leaves a plain vanilla player; per-player state is stored in one
-  small overworld saved-data record and is simply orphaned on removal.
 
 ## Forest floor & ground cover
 
@@ -342,8 +310,8 @@ is untouched either way.
 - **Editable config file** - or hand-edit a simple settings file.
 - **Live reload** - apply most setting changes on a running server without a restart.
 - **Everything is toggleable** - every system (growth, dieback, trees, bushes, trails, leaf
-  litter, shorelines, seasons, day/night, precipitation, visuals, crops, diet) can be turned on
-  or off on its own. Crops and diet have their own toggles on the Mod Menu config screen.
+  litter, shorelines, seasons, day/night, precipitation, visuals, crops) can be turned on
+  or off on its own. Crops have their own toggle on the Mod Menu config screen.
 - **Everything is tunable** - rates, limits, distances, per-biome behavior, season length, and
   per-season strength are all adjustable.
 - **Performance-bounded** - the whole simulation runs within a strict per-tick budget, so it
