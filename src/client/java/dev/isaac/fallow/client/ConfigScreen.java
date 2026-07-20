@@ -176,6 +176,6 @@ public final class ConfigScreen extends Screen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.setScreenAndShow(this.parent);
     }
 }

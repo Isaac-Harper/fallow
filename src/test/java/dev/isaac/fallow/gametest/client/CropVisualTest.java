@@ -69,8 +69,17 @@ public class CropVisualTest implements FabricClientGameTest {
             // Let the chunk geometry and lighting settle before aiming and shooting.
             context.waitTicks(20);
 
-            // Hide HUD (chat, hotbar, crosshair) for a clean crop-only frame.
-            context.runOnClient(client -> client.options.hideGui = true);
+            // Hide HUD (chat, hotbar, crosshair) for a clean crop-only frame. 26.2 moved the flag
+            // off Options.hideGui onto Hud (toggle only, so guard on isHidden to force the state).
+            //? if >=26.2 {
+            context.runOnClient(client -> {
+                if (!client.gui.hud.isHidden()) {
+                    client.gui.hud.toggle();
+                }
+            });
+            //?} else {
+            /*context.runOnClient(client -> client.options.hideGui = true);*/
+            //?}
 
             // Aim toward the center of the row at crop height. The trellis vine and corn double
             // stalk are the tallest elements; aiming slightly above ground level keeps them in frame.
@@ -82,7 +91,15 @@ public class CropVisualTest implements FabricClientGameTest {
                 TestScreenshotOptions.of("fallow_crops_plot").withSize(854, 480));
 
             // Restore HUD so the runner's end-state check doesn't see a surprising client state.
-            context.runOnClient(client -> client.options.hideGui = false);
+            //? if >=26.2 {
+            context.runOnClient(client -> {
+                if (client.gui.hud.isHidden()) {
+                    client.gui.hud.toggle();
+                }
+            });
+            //?} else {
+            /*context.runOnClient(client -> client.options.hideGui = false);*/
+            //?}
         }
     }
 

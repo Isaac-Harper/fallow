@@ -9,9 +9,11 @@ import dev.isaac.fallow.growth.GrowthRateProvider;
 import dev.isaac.fallow.season.SeasonClock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
@@ -42,6 +44,11 @@ import java.util.Optional;
  */
 public final class SaplingSpreadTask implements EcologyTask {
     private static final int LOG_ANCHOR_ATTEMPTS = 4;
+
+    // BlockTags.SAPLINGS was dropped as a code constant in 26.2, but the minecraft:saplings data
+    // tag still ships in both versions - rebuild the key inline so this compiles on either node.
+    private static final TagKey<Block> SAPLINGS =
+        TagKey.create(Registries.BLOCK, Identifier.withDefaultNamespace("saplings"));
 
     private final GrowthRateProvider rates;
 
@@ -246,7 +253,7 @@ public final class SaplingSpreadTask implements EcologyTask {
         int r = cfg.densityRadius;
         int count = 0;
         for (BlockPos p : BlockPos.betweenClosed(pos.offset(-r, -2, -r), pos.offset(r, 2, r))) {
-            if (level.getBlockState(p).is(BlockTags.SAPLINGS)) {
+            if (level.getBlockState(p).is(SAPLINGS)) {
                 if (++count >= cap) {
                     return count;
                 }

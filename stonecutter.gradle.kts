@@ -3,16 +3,17 @@ plugins {
 }
 
 // Active = the version your IDE compiles and the state src/ is left in.
-stonecutter active "26.1.2"
+stonecutter active "26.2"
 
 stonecutter parameters {
     replacements {
-        // No downgrade rules yet: single 26.1.x node. When backporting, centralize renamed-symbol
-        // replacements here (see Shulker Pocket's stonecutter.gradle.kts for the pattern).
+        // No downgrade rules yet: the 26.1 and 26.2 nodes share one source tree. If a renamed
+        // symbol ever diverges between them, centralize the replacement here (see Shulker
+        // Pocket's stonecutter.gradle.kts for the pattern).
     }
 }
 
-// Fan a task out across every version node (one node today; matches Shulker Pocket CI usage).
+// Fan a task out across every version node (26.2 + 26.1.2; matches Shulker Pocket CI usage).
 // chiseledBuild compiles + tests all nodes (CI); chiseledPublishMods uploads every node's jar to
 // Modrinth (the tag publish job).
 tasks.register("chiseledBuild") {

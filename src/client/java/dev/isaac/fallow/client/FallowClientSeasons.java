@@ -103,7 +103,13 @@ public final class FallowClientSeasons {
         if (changed) {
             Minecraft minecraft = Minecraft.getInstance();
             if (minecraft.levelRenderer != null && minecraft.level != null) {
-                minecraft.execute(minecraft.levelRenderer::allChanged);
+                // allChanged (clear tint caches + rebuild all sections) moved off LevelRenderer
+                // onto the new LevelExtractor in 26.2; both forms do the same seasonal tint refresh.
+                //? if >=26.2 {
+                minecraft.execute(minecraft.levelExtractor::allChanged);
+                //?} else {
+                /*minecraft.execute(minecraft.levelRenderer::allChanged);*/
+                //?}
             }
         }
     }

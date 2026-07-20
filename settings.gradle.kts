@@ -16,12 +16,13 @@ plugins {
 
 stonecutter {
     create(rootProject) {
-        // Single node today; Fallow targets current MC only. Backporting later = add nodes here
-        // plus [version] sections in stonecutter.properties.toml, like Shulker Pocket.
+        // Two nodes: current 26.2 plus the 26.1.x line kept for players still on it. Add nodes
+        // here plus [version] sections in stonecutter.properties.toml, like Shulker Pocket.
         versions(
+            "26.2",     // covers 26.2
             "26.1.2",   // covers 26.1, 26.1.1, 26.1.2
         )
-        vcsVersion = "26.1.2"
+        vcsVersion = "26.2"
     }
 }
 
