@@ -2995,11 +2995,49 @@ def write_png(path, px):
         f.write(chunk(b"IEND", b""))
 
 
+def _volumize(px, up=0.30, down=0.26):
+    """Add a consistent upper-left light across a sprite's interior fill.
+
+    Only pixels fully surrounded by opaque neighbours are touched, so the dark
+    silhouette outline stays crisp. Interior pixels are lit toward the top-left
+    and shaded toward the bottom-right by their diagonal position, giving solid
+    forms volume while thin foliage and tiny seeds (almost all edge) barely move.
+    """
+    def op(x, y):
+        return 0 <= x < 16 and 0 <= y < 16 and px[y][x][3] > 0
+
+    xs = [x for y in range(16) for x in range(16) if px[y][x][3] > 0]
+    ys = [y for y in range(16) for x in range(16) if px[y][x][3] > 0]
+    if not xs:
+        return px
+    minx, miny = min(xs), min(ys)
+    w = max(1, max(xs) - minx)
+    h = max(1, max(ys) - miny)
+    out = [row[:] for row in px]
+    for y in range(16):
+        for x in range(16):
+            r, g, b, a = px[y][x]
+            if a == 0:
+                continue
+            if not (op(x - 1, y) and op(x + 1, y) and op(x, y - 1) and op(x, y + 1)):
+                continue  # silhouette edge - keep the outline as drawn
+            t = 0.5 * ((x - minx) / w + (y - miny) / h)
+            if t < 0.45:
+                f = (0.45 - t) / 0.45 * up
+                r, g, b = r + (255 - r) * f, g + (255 - g) * f, b + (255 - b) * f
+            elif t > 0.55:
+                f = (t - 0.55) / 0.45 * down
+                r, g, b = r * (1 - f), g * (1 - f), b * (1 - f)
+            out[y][x] = (min(255, int(r)), min(255, int(g)), min(255, int(b)), a)
+    return out
+
+
 def main():
     (TEXTURES / "block").mkdir(parents=True, exist_ok=True)
     (TEXTURES / "item").mkdir(parents=True, exist_ok=True)
     for name, rows in SPRITES.items():
         px = [[PALETTE[ch] for ch in row] for row in rows]
+        px = _volumize(px)
         write_png(TEXTURES / f"{name}.png", px)
     print(f"wrote {len(SPRITES)} textures")
 
