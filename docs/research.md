@@ -276,7 +276,7 @@ Confirmed by audit while here: `minecraft:dead_bush` is excluded from the bush-c
 (`VegetationSproutTask.BUSHES`), is never a dieback decay product (`DiebackTask` only steps plants
 *down*: tall->short->air, grass_block->dirt), and is not among any block the ecology tasks place.
 Dead bushes are *dead* - they never propagate. The only `dead_bush` blocks in the project are
-static test-world decoration (`islands.py`). Kept as an explicit invariant.
+static test-world decoration (`tools/islands.py`). Kept as an explicit invariant.
 
 ### 5.5 Sources (verified)
 

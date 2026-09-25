@@ -8,7 +8,7 @@ bold outlined silhouettes for items. Deterministic: no randomness, byte-identica
 output on every run.
 
 Re-run to regenerate identical files:
-python3 crops_art.py
+python3 tools/crops_art.py
 
 Writes 24 block textures and 9 item textures into
 src/main/resources/assets/fallow/textures/{block,item}/.
@@ -18,7 +18,7 @@ import struct
 import zlib
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 TEXTURES = ROOT / "src/main/resources/assets/fallow/textures"
 
 # Shared palette. '.' is transparent; letters are grouped by hue ramp.

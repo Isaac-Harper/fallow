@@ -4,7 +4,7 @@ seasons left to right (spring, summer, autumn, winter snow) over a small sky-and
 Pixel art keeps it on-theme for a Minecraft mod and simple to edit: change the LOGICAL grid below
 and re-run. Output is nearest-neighbour upscaled so the blocks stay crisp.
 
-    python3 icon_art.py
+    python3 tools/icon_art.py
 
 Writes icon.png (repo root, Modrinth/GitHub page) and src/main/resources/assets/fallow/icon.png
 (referenced by fabric.mod.json, shown in the mods list).

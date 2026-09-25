@@ -11,7 +11,7 @@ Emits two datapack functions:
 
 A one-tick function can't force-load and build in the same tick (chunks load over later
 ticks), which is why reset is a force-load + scheduled build rather than a direct call.
-Run this script (python3 islands.py) to regenerate the functions, then in-game:
+Run this script (python3 tools/islands.py) to regenerate the functions, then in-game:
   /reload   then   /function fallow_test:reset_islands
 """
 import random, os
@@ -142,7 +142,7 @@ def island_cmds(isl, cx, cz):
 
 
 def main():
-    funcdir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+    funcdir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                            "versions/26.1.2/run/fallow-test/datapacks/fallow-test-tools/data/fallow_test/function")
     build = []
     i = 0

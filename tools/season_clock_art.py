@@ -8,7 +8,7 @@ of the season the hand is currently in is brightened. The model is driven by the
 `fallow:season` property, which returns a continuous fraction-through-the-year in [0, 1)
 (see SeasonClockModelProperty / FallowClientSeasons.yearFraction).
 
-Re-run after editing:  python3 season_clock_art.py
+Re-run after editing:  python3 tools/season_clock_art.py
 Writes textures, per-frame item models, and the range_dispatch item definition under
 src/main/resources/assets/fallow/.
 """
